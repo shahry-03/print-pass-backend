@@ -16,6 +16,11 @@ spring:
           uri: lb://USER-SERVICE   # 'lb' ka matlab hai Load Balancer (Eureka se address dhoondho)
           predicates:
             - Path=/api/users/** # Agar URL mein yeh aaye, toh USER-SERVICE ko bhej do
+      # NAYA Route shop-service ke liye
+        - id: shop-service
+          uri: lb://SHOP-SERVICE
+          predicates:
+            - Path=/api/shops/**
 
 eureka:
   client:
