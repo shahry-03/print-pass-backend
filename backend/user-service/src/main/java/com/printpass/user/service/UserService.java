@@ -37,6 +37,13 @@ public class UserService {
         return users.stream().map(this::mapToUserResponse).toList();
     }
 
+    //method: get user by its id Ek
+    public UserResponse getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found!"));
+        return mapToUserResponse(user);
+    }
+
     // Ek chota sa helper method jo User Entity ko UserResponse mein badalta hai
     private UserResponse mapToUserResponse(User user) {
         return UserResponse.builder()

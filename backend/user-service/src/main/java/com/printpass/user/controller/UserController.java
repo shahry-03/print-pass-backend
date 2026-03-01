@@ -27,4 +27,11 @@ public class UserController {
     public List<UserResponse> getAllUsers() {
         return userService.getAllUsers();
     }
+
+    // A new endpoint that fetches a user using their ID.
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public UserResponse getUserById(@PathVariable Long id) {
+        return userService.getUserById(id);
+    }
 }
