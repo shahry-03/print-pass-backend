@@ -1,30 +1,50 @@
 package com.printpass.user.service;
 
 import com.printpass.user.dto.UserRequest;
+import com.printpass.user.dto.UserResponse;
 import com.printpass.user.entity.User;
 import com.printpass.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder; // <--- Hashing Tool Inject kiya
 
-    public User createUser(UserRequest request) {
-        // Naya user banate waqt hum usko entity mein convert kar rahe hain
+    public UserResponse createUser(UserRequest request) {
         User user = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
-                .password(request.getPassword()) // Baad mein isko encrypt karenge
+                .password(passwordEncoder.encode(request.getPassword())) // <--- Password Encrypt ho raha hai!
                 .role(request.getRole())
-                .walletBalance(BigDecimal.ZERO) // Naye user ka balance hamesha 0 hoga
+                .walletBalance(BigDecimal.ZERO)
                 .build();
 
-        // Database mein save karwa diya
-        return userRepository.save(user);
+        User savedUser = userRepository.save(user);
+        return mapToUserResponse(savedUser);
+    }
+
+    // Database se saare users la kar unhein Response DTO mein convert karna
+    public List<UserResponse> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return users.stream().map(this::mapToUserResponse).toList();
+    }
+
+    // Ek chota sa helper method jo User Entity ko UserResponse mein badalta hai
+    private UserResponse mapToUserResponse(User user) {
+        return UserResponse.builder()
+                .id(user.getId())
+                .name(user.getName())
+                .email(user.getEmail())
+                .role(user.getRole())
+                .walletBalance(user.getWalletBalance())
+                .build();
     }
 }
