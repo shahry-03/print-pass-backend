@@ -35,4 +35,11 @@ public class JobController {
     public JobResponse updateJobStatus(@PathVariable Long jobId, @RequestParam JobStatus status) {
         return jobService.updateJobStatus(jobId, status);
     }
+
+    // Nayi GET API: Vendor isay hit karega
+    @GetMapping("/verify/{pin}")
+    @ResponseStatus(HttpStatus.OK)
+    public JobResponse verifyPin(@PathVariable String pin) {
+        return jobService.getJobByPin(pin);
+    }
 }

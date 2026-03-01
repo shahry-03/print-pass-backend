@@ -11,6 +11,7 @@ import com.printpass.job.enums.JobStatus;
 import com.printpass.job.repository.JobRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import java.util.Random;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -56,7 +57,11 @@ public class JobService {
             cost = cost.multiply(BigDecimal.valueOf(3));
         }
 
-        // 4. Order (Job) Save karein
+
+        // 🌟 NAYA MAGIC: 6-Digit Random PIN Generate karein
+        String secretPin = String.format("%06d", new Random().nextInt(1000000));
+
+        // Order (Job) Save karein
         PrintJob job = PrintJob.builder()
                 .studentId(request.getStudentId())
                 .shopId(request.getShopId())
@@ -64,7 +69,8 @@ public class JobService {
                 .totalPages(request.getTotalPages())
                 .isColor(request.isColor())
                 .totalCost(cost)
-                .status(JobStatus.PENDING) // Order abhi PENDING hai
+                .status(JobStatus.PENDING)
+                .pin(secretPin) // Nayi Line: PIN save karein
                 .build();
 
         PrintJob savedJob = jobRepository.save(job);
@@ -90,6 +96,7 @@ public class JobService {
         return mapToResponse(updatedJob);
     }
 
+    // mapToResponse mein bhi update karein
     private JobResponse mapToResponse(PrintJob job) {
         return JobResponse.builder()
                 .id(job.getId())
@@ -99,6 +106,16 @@ public class JobService {
                 .totalPages(job.getTotalPages())
                 .totalCost(job.getTotalCost())
                 .status(job.getStatus())
+                .pin(job.getPin()) // Nayi Line: Student ko PIN wapas bhejein
                 .build();
+    }
+
+
+    // Naya Method: Vendor ke liye PIN verify karna
+    public JobResponse getJobByPin(String pin) {
+        PrintJob job = jobRepository.findByPin(pin)
+                .orElseThrow(() -> new RuntimeException("Error: This pin is wrong or order is not present!"));
+
+        return mapToResponse(job);
     }
 }

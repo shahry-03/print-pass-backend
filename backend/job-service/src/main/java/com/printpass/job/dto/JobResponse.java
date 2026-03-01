@@ -13,4 +13,6 @@ public class JobResponse {
     private Integer totalPages;
     private BigDecimal totalCost; // Yeh hum khud calculate karenge!
     private JobStatus status;
+    // Baki fields ke sath isay bhi add karein
+    private String pin;
 }

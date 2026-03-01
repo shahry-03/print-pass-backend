@@ -45,6 +45,10 @@ public class PrintJob {
     @Column(nullable = false)
     private JobStatus status; // Abhi order ka kya status hai?
 
+    // Naya Column: 6-Digit Secret PIN
+    @Column(nullable = false, unique = true, length = 6)
+    private String pin;
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 }
