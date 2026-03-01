@@ -27,4 +27,10 @@ public class ShopController {
     public List<ShopResponse> getAllShops() {
         return shopService.getAllShops();
     }
+
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public ShopResponse getShopById(@PathVariable Long id) {
+        return shopService.getShopById(id);
+    }
 }

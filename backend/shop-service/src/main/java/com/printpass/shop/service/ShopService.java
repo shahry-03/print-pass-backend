@@ -46,6 +46,12 @@ public class ShopService {
         return mapToResponse(savedShop);
     }
 
+    public ShopResponse getShopById(Long id) {
+        Shop shop = shopRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Error: Shop not Found!"));
+        return mapToResponse(shop);
+    }
+
     // Neechay getAllShops() aur mapToResponse() waise hi rahenge...
     public List<ShopResponse> getAllShops() {
         return shopRepository.findAll().stream().map(this::mapToResponse).toList();

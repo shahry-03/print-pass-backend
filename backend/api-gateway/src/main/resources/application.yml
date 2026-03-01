@@ -22,6 +22,12 @@ spring:
           predicates:
             - Path=/api/shops/**
 
+        # NAYA Route job-service ke liye
+        - id: job-service
+          uri: lb://JOB-SERVICE
+          predicates:
+            - Path=/api/jobs/**
+
 eureka:
   client:
     service-url:
