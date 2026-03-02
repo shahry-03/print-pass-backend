@@ -1,29 +1,36 @@
-package com.printpass.user.config;
+package com.printpass.user.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    // Yeh hamara BCrypt ka jadooi tool hai
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // Yeh batata hai ke filhal hamari APIs par koi password nahi mangna (Permit All)
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
-        return http.build();
+        return http
+                // Naya tarika: Lambda function se CSRF disable karna
+                .csrf(AbstractHttpConfigurer::disable)
+
+                // Naya tarika: Authorization rules lagana (Bina .and() ke)
+                .authorizeHttpRequests(auth -> auth
+                        // /api/users/ ke tamaam rasto ko bina token ke allow karein
+                        .requestMatchers("/api/users/**", "/error").permitAll()
+                        // Baqi kisi bhi raste ke liye token lazmi ho (Security best practice)
+                        .anyRequest().authenticated()
+                )
+                .build();
     }
 }

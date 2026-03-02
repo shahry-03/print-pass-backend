@@ -1,9 +1,11 @@
 package com.printpass.user.service;
 
+import com.printpass.user.dto.AuthRequest;  //new import for login request
 import com.printpass.user.dto.UserRequest;
 import com.printpass.user.dto.UserResponse;
 import com.printpass.user.entity.User;
 import com.printpass.user.repository.UserRepository;
+import com.printpass.user.security.JwtService;  //new import for JWT token generation
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final JwtService jwtService;  // <--- JWT Token Banane Wala Service Inject kiya
     private final PasswordEncoder passwordEncoder; // <--- Hashing Tool Inject kiya
 
     public UserResponse createUser(UserRequest request) {
@@ -29,6 +32,21 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
         return mapToUserResponse(savedUser);
+    }
+
+    // Naya Login Method
+    public String login(AuthRequest request) {
+        // 1. Database mein user ka email dhoondein
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Error: User is email se mojood nahi!"));
+
+        // 2. Password match karein (Jo password Postman se aaya vs jo Database mein hai)
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            throw new RuntimeException("Error: Password ghalat hai!");
+        }
+
+        // 3. Agar sab theek hai, toh Token (ID Card) generate karein
+        return jwtService.generateToken(user.getEmail(), user.getRole().name());
     }
 
     // Database se saare users la kar unhein Response DTO mein convert karna

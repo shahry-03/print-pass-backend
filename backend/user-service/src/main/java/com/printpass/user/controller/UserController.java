@@ -1,5 +1,6 @@
 package com.printpass.user.controller;
 
+import com.printpass.user.dto.AuthRequest;
 import com.printpass.user.dto.UserRequest;
 import com.printpass.user.dto.UserResponse;
 import com.printpass.user.service.UserService;
@@ -33,5 +34,12 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public UserResponse getUserById(@PathVariable Long id) {
         return userService.getUserById(id);
+    }
+
+    // Nayi API: Login karne ke liye
+    @PostMapping("/login")
+    @ResponseStatus(HttpStatus.OK)
+    public String login(@RequestBody AuthRequest request) {
+        return userService.login(request);
     }
 }
