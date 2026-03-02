@@ -11,6 +11,7 @@ spring:
           enabled: true
           lower-case-service-id: true
       # Yahan hum Gateway ko rasta bata rahe hain
+      # user-service mein filter mat lagayega, warna login bhi band ho jayega!
       routes:
         - id: user-service
           uri: lb://USER-SERVICE   # 'lb' ka matlab hai Load Balancer (Eureka se address dhoondho)
@@ -21,12 +22,16 @@ spring:
           uri: lb://SHOP-SERVICE
           predicates:
             - Path=/api/shops/**
+          filters:
+            - AuthenticationFilter   # NAYI LINE: Guard yahan khara hoga!
 
         # NAYA Route job-service ke liye
         - id: job-service
           uri: lb://JOB-SERVICE
           predicates:
             - Path=/api/jobs/**
+          filters:
+            - AuthenticationFilter   # NAYI LINE: Guard yahan khara hoga!
 
 eureka:
   client:
