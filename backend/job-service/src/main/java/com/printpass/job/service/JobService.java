@@ -1,5 +1,13 @@
 package com.printpass.job.service;
 
+import org.springframework.web.multipart.MultipartFile;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.util.UUID;
 import com.printpass.job.client.ShopClient;
 import com.printpass.job.client.UserClient;
 import com.printpass.job.dto.JobRequest;
@@ -23,10 +31,13 @@ public class JobService {
     private final JobRepository jobRepository;
     private final UserClient userClient;
     private final ShopClient shopClient;
+    // Folder kahan banega? Aapke project ke andar 'uploads' ke naam se
+    private final String UPLOAD_DIR = "uploads/";
 
-    public JobResponse createJob(JobRequest request) {
 
-        // 1. Check karein kya yeh waqai koi STUDENT hai?
+    public JobResponse createJob(JobRequest request, MultipartFile file) { // File argument add kiya
+
+        // 1. Validation (Student & Shop ki wahi purani logic)
         UserDto student;
         try {
             student = userClient.getUserById(request.getStudentId());
@@ -37,7 +48,6 @@ public class JobService {
             throw new RuntimeException("Error: Sirf ek STUDENT hi print order de sakta hai!");
         }
 
-        // 2. Check karein kya DUKAN mojood hai aur khuli hai?
         ShopDto shop;
         try {
             shop = shopClient.getShopById(request.getShopId());
@@ -48,34 +58,52 @@ public class JobService {
             throw new RuntimeException("Error: Maazrat, yeh dukan abhi band hai!");
         }
 
-        // 3. Bill Calculation (The Brain)
-        // Basic Cost = total pages * shop ki per page cost
-        BigDecimal cost = shop.getPerPageCost().multiply(BigDecimal.valueOf(request.getTotalPages()));
+        // 2. FILE SAVING LOGIC (Naya Jadu!)
+        File directory = new File(UPLOAD_DIR);
+        if (!directory.exists()) {
+            directory.mkdirs(); // Agar uploads folder nahi hai, toh bana do
+        }
 
-        // Agar color print hai, toh hum cost ko 3 se multiply (triple) kar dete hain
+        // File ka original naam lo (e.g., "notes.pdf") aur uske aage ek random ID (UUID) laga do
+        // Taake agar 2 students "notes.pdf" bhejein, toh purani file delete na ho jaye
+        String originalFilename = file.getOriginalFilename();
+        String uniqueFilename = UUID.randomUUID().toString() + "_" + originalFilename;
+        Path filePath = Paths.get(UPLOAD_DIR + uniqueFilename);
+
+        try {
+            // File ko copy karke uploads folder mein rakh do
+            Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            throw new RuntimeException("Error: File server par save nahi ho saki!", e);
+        }
+
+        // 3. Bill Calculation
+        BigDecimal cost = shop.getPerPageCost().multiply(BigDecimal.valueOf(request.getTotalPages()));
         if (request.isColor()) {
             cost = cost.multiply(BigDecimal.valueOf(3));
         }
 
+        // 4. Secret PIN Generate karein
+        String secretPin = String.format("%06d", new java.util.Random().nextInt(1000000));
 
-        // 🌟 NAYA MAGIC: 6-Digit Random PIN Generate karein
-        String secretPin = String.format("%06d", new Random().nextInt(1000000));
-
-        // Order (Job) Save karein
+        // 5. Order (Job) Save karein
         PrintJob job = PrintJob.builder()
                 .studentId(request.getStudentId())
                 .shopId(request.getShopId())
-                .documentName(request.getDocumentName())
+                .documentName(uniqueFilename) // Database mein naya UNIQUE naam save karein
                 .totalPages(request.getTotalPages())
                 .isColor(request.isColor())
                 .totalCost(cost)
                 .status(JobStatus.PENDING)
-                .pin(secretPin) // Nayi Line: PIN save karein
+                .pin(secretPin)
                 .build();
 
         PrintJob savedJob = jobRepository.save(job);
         return mapToResponse(savedJob);
     }
+
+
+
 
     public List<JobResponse> getAllJobs() {
         return jobRepository.findAll().stream().map(this::mapToResponse).toList();
