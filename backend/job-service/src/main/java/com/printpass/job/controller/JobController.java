@@ -52,12 +52,7 @@ public class JobController {
         return jobService.getAllJobs();
     }
 
-    // Nayi PUT API: Status Update karne ke liye
-    @PutMapping("/{jobId}/status")
-    @ResponseStatus(HttpStatus.OK)
-    public JobResponse updateJobStatus(@PathVariable Long jobId, @RequestParam JobStatus status) {
-        return jobService.updateJobStatus(jobId, status);
-    }
+
 
     // Nayi GET API: Vendor isay hit karega
     @GetMapping("/verify/{pin}")
@@ -86,5 +81,15 @@ public class JobController {
         } catch (Exception e) {
             throw new RuntimeException("Error: File download karne mein masla aaya!", e);
         }
+    }
+
+    // 🔄 Status Update API (Yeh API file delete ka jadu bhi chalayegi)
+    @PutMapping("/{jobId}/status")
+    public ResponseEntity<JobResponse> updateStatus(
+            @PathVariable Long jobId,
+            @RequestParam("newStatus") JobStatus newStatus) {
+
+        JobResponse response = jobService.updateJobStatus(jobId, newStatus);
+        return ResponseEntity.ok(response);
     }
 }

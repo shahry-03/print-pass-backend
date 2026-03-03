@@ -25,3 +25,15 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+
+# DigitalOcean Spaces (S3) Configuration
+cloud:
+  digitalocean:
+    spaces:
+      # Agar aapne Singapore select kiya tha toh sgp1 rahega, warna lon1 kar dijiyega
+      endpoint: sgp1.digitaloceanspaces.com
+      region: sgp1
+      # Yahan apni keys aur bucket ka naam replace karein
+      access-key: YAHAN_APNI_KEY_NAHI_DENI
+      secret-key: YAHAN_APNA_SECRET_NAHI_DENA
+      bucket: printpass-storage
