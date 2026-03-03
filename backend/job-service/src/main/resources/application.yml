@@ -34,6 +34,6 @@ cloud:
       endpoint: sgp1.digitaloceanspaces.com
       region: sgp1
       # Yahan apni keys aur bucket ka naam replace karein
-      access-key: YAHAN_APNI_KEY_NAHI_DENI
-      secret-key: YAHAN_APNA_SECRET_NAHI_DENA
+      access-key: DO801H2PZNRUZGXDTTUU
+      secret-key: 3jkc3zc/qm7zmCmdOwUuC50EpmnJjn6PugulQCwH0wg
       bucket: printpass-storage
