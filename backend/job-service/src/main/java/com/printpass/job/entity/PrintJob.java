@@ -26,7 +26,7 @@ public class PrintJob {
     @Column(nullable = false)
     private Long studentId; // Kisne order diya? (User Service se)
 
-    @Column(nullable = false)
+    @Column(nullable = true) // kiyunki hum version 1.0 me shop ka jhanjhat nahi chahte, toh isko optional rakhte hain. Future me agar zarurat padi toh isko mandatory bana denge.
     private Long shopId; // Kis dukan par order diya? (Shop Service se)
 
     @Column(nullable = false)

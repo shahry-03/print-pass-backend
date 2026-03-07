@@ -31,56 +31,141 @@ public class JobService {
     private final String UPLOAD_DIR = "uploads/";
 
 
+//    public JobResponse createJob(JobRequest request, MultipartFile file) {
+//
+//        // 1. Validation (Student & Shop ki wahi purani logic)
+//        UserDto student;
+//        try {
+//            student = userClient.getUserById(request.getStudentId());
+//        } catch (Exception e) {
+//            throw new RuntimeException("Error: Student ID ghalat hai ya mojood nahi!");
+//        }
+//        if (!"STUDENT".equals(student.getRole())) {
+//            throw new RuntimeException("Error: Sirf ek STUDENT hi print order de sakta hai!");
+//        }
+//
+//        ShopDto shop;
+//        try {
+//            shop = shopClient.getShopById(request.getShopId());
+//        } catch (Exception e) {
+//            throw new RuntimeException("Error: Shop ID ghalat hai ya mojood nahi!");
+//        }
+//        if (!shop.isOpen()) {
+//            throw new RuntimeException("Error: Maazrat, yeh dukan abhi band hai!");
+//        }
+//
+//        // 2. CLOUD UPLOAD LOGIC (Naya Aasmaani Jadu! ☁️🚀)
+//        String cloudFileUrl;
+//        try {
+//            // File seedha DigitalOcean Spaces par jayegi aur uska pakka URL wapas aayega!
+//            cloudFileUrl = cloudStorageService.uploadFileToCloud(file);
+//        } catch (IOException e) {
+//            throw new RuntimeException("Error: File cloud par upload nahi ho saki!", e);
+//        }
+//
+//        // 3. Bill Calculation
+//        BigDecimal cost = shop.getPerPageCost().multiply(BigDecimal.valueOf(request.getTotalPages()));
+//        if (request.isColor()) {
+//            cost = cost.multiply(BigDecimal.valueOf(3));
+//        }
+//
+//        // 4. Secret PIN Generate karein
+//        String secretPin = String.format("%06d", new java.util.Random().nextInt(1000000));
+//
+//        // 5. Order (Job) Save karein
+//        PrintJob job = PrintJob.builder()
+//                .studentId(request.getStudentId())
+//                .shopId(request.getShopId())
+//                // Ab yahan local naam ke bajaye Cloud ka poora URL save hoga!
+//                .documentName(cloudFileUrl)
+//                .totalPages(request.getTotalPages())
+//                .isColor(request.isColor())
+//                .totalCost(cost)
+//                .status(JobStatus.PENDING)
+//                .pin(secretPin)
+//                .build();
+//
+//        PrintJob savedJob = jobRepository.save(job);
+//        return mapToResponse(savedJob);
+//    }
+
+    // New Method: for Job Creation without Shop addition
+//    public JobResponse createJob(JobRequest request, MultipartFile file) {
+//
+//        // 1. Validation (Sirf Student ki pehchan)
+//        UserDto student;
+//        try {
+//            student = userClient.getUserById(request.getStudentId());
+//        } catch (Exception e) {
+//            throw new RuntimeException("Error: Student ID ghalat hai ya mojood nahi!");
+//        }
+//        if (!"STUDENT".equals(student.getRole())) {
+//            throw new RuntimeException("Error: Sirf ek STUDENT hi print order de sakta hai!");
+//        }
+//
+//        // ❌ YAHAN SE SHOP VALIDATION AUR COST CALCULATION HATA DI GAYI HAI ❌
+//
+//        // 2. CLOUD UPLOAD LOGIC (Naya Aasmaani Jadu! ☁️🚀)
+//        String cloudFileUrl;
+//        try {
+//            cloudFileUrl = cloudStorageService.uploadFileToCloud(file);
+//        } catch (IOException e) {
+//            throw new RuntimeException("Error: File cloud par upload nahi ho saki!", e);
+//        }
+//
+//        // 3. Secret PIN Generate karein (Universal Verification ke liye)
+//        String secretPin = String.format("%06d", new java.util.Random().nextInt(1000000));
+//
+//        // 4. Order (Job) Save karein (Universal Roaming Mode)
+//        PrintJob job = PrintJob.builder()
+//                .studentId(request.getStudentId())
+//                .shopId(null) // 🌟 JADOO: Koi dukan select nahi ki! (Universal)
+//                .documentName(cloudFileUrl)
+//                .totalPages(request.getTotalPages())
+//                .isColor(request.isColor())
+//                .totalCost(java.math.BigDecimal.ZERO) // 🌟 JADOO: v1.0 ke liye cost Zero hai
+//                .status(JobStatus.PENDING)
+//                .pin(secretPin)
+//                .build();
+//
+//        PrintJob savedJob = jobRepository.save(job);
+//        return mapToResponse(savedJob);
+//    }
+
     public JobResponse createJob(JobRequest request, MultipartFile file) {
 
-        // 1. Validation (Student & Shop ki wahi purani logic)
-        UserDto student;
+        // 1. Validation (Safe Mode: Agar ID na mile toh bhi crash na ho)
         try {
-            student = userClient.getUserById(request.getStudentId());
+            if (request.getStudentId() != null && request.getStudentId() > 0) {
+                UserDto student = userClient.getUserById(request.getStudentId());
+                if (!"STUDENT".equals(student.getRole())) {
+                    throw new RuntimeException("Error: Sirf ek STUDENT hi print order de sakta hai!");
+                }
+            }
         } catch (Exception e) {
-            throw new RuntimeException("Error: Student ID ghalat hai ya mojood nahi!");
-        }
-        if (!"STUDENT".equals(student.getRole())) {
-            throw new RuntimeException("Error: Sirf ek STUDENT hi print order de sakta hai!");
+            // 🌟 Jadoo: Agar User Service band ho ya ID na mile, toh log karein lekin rokein nahi
+            System.out.println("Warning: Student validation failed, proceeding anyway for v1.0");
         }
 
-        ShopDto shop;
-        try {
-            shop = shopClient.getShopById(request.getShopId());
-        } catch (Exception e) {
-            throw new RuntimeException("Error: Shop ID ghalat hai ya mojood nahi!");
-        }
-        if (!shop.isOpen()) {
-            throw new RuntimeException("Error: Maazrat, yeh dukan abhi band hai!");
-        }
-
-        // 2. CLOUD UPLOAD LOGIC (Naya Aasmaani Jadu! ☁️🚀)
+        // 2. CLOUD UPLOAD LOGIC ☁️🚀
         String cloudFileUrl;
         try {
-            // File seedha DigitalOcean Spaces par jayegi aur uska pakka URL wapas aayega!
             cloudFileUrl = cloudStorageService.uploadFileToCloud(file);
         } catch (IOException e) {
             throw new RuntimeException("Error: File cloud par upload nahi ho saki!", e);
         }
 
-        // 3. Bill Calculation
-        BigDecimal cost = shop.getPerPageCost().multiply(BigDecimal.valueOf(request.getTotalPages()));
-        if (request.isColor()) {
-            cost = cost.multiply(BigDecimal.valueOf(3));
-        }
-
-        // 4. Secret PIN Generate karein
+        // 3. Secret PIN Generate karein
         String secretPin = String.format("%06d", new java.util.Random().nextInt(1000000));
 
-        // 5. Order (Job) Save karein
+        // 4. Order (Job) Save karein
         PrintJob job = PrintJob.builder()
-                .studentId(request.getStudentId())
-                .shopId(request.getShopId())
-                // Ab yahan local naam ke bajaye Cloud ka poora URL save hoga!
+                .studentId(request.getStudentId() != null ? request.getStudentId() : 0L)
+                .shopId(null)
                 .documentName(cloudFileUrl)
                 .totalPages(request.getTotalPages())
                 .isColor(request.isColor())
-                .totalCost(cost)
+                .totalCost(java.math.BigDecimal.ZERO)
                 .status(JobStatus.PENDING)
                 .pin(secretPin)
                 .build();

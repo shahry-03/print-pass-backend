@@ -6,9 +6,12 @@ import com.printpass.user.dto.UserResponse;
 import com.printpass.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -36,10 +39,24 @@ public class UserController {
         return userService.getUserById(id);
     }
 
-    // Nayi API: Login karne ke liye
+    // 🔄 Naya aur Behtar Login (React ki khushi ke liye)
     @PostMapping("/login")
-    @ResponseStatus(HttpStatus.OK)
-    public String login(@RequestBody AuthRequest request) {
-        return userService.login(request);
+    public ResponseEntity<Map<String, Object>> login(@RequestBody AuthRequest request) {
+
+        // 1. Password verify karein aur JWT Token hasil karein
+        String token = userService.login(request);
+
+        // 2. Jadu: Us User ki details dhoondein jo login ho raha hai
+        UserResponse loggedInUser = userService.getAllUsers().stream()
+                .filter(u -> u.getEmail().equals(request.getEmail()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // 3. Data ko bilkul us tarah Pack karein jaisa React (Copilot) chahta hai!
+        Map<String, Object> response = new HashMap<>();
+        response.put("token", token);
+        response.put("user", loggedInUser);
+
+        return ResponseEntity.ok(response);
     }
 }

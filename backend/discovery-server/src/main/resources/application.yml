@@ -4,9 +4,34 @@ server:
 spring:
   application:
     name: discovery-server
+  security:
+    user:
+      name: admin
+      password: admin123
 
 eureka:
+  instance:
+    hostname: localhost
   client:
-    # Yeh server khud hai, isliye isey register nahi hona
-    register-with-eureka: false
-    fetch-registry: false
+    register-with-eureka: false   # Main khud boss hun, mujhe list mein mat dalo
+    fetch-registry: false         # Mujhe kisi aur se list nahi mangni
+    service-url:
+      # Baqi services is secure link ke zariye mujh se connect hongi
+      defaultZone: http://admin:admin123@localhost:8761/eureka/
+  server:
+    wait-time-in-ms-when-sync-empty: 0
+    enable-self-preservation: false # Dev environment ke liye theek hai
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    com.netflix.eureka: WARN
+    com.netflix.discovery: WARN

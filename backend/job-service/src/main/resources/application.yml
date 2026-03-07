@@ -5,6 +5,12 @@ spring:
   application:
     name: job-service
 
+  # 🌟 NAYI LINES: Bari files upload karne ki permission
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
   datasource:
     # Dekhein yahan end mein 'jobdb' likha hai
     url: jdbc:postgresql://ep-divine-resonance-a12py9f3.ap-southeast-1.aws.neon.tech/jobdb?sslmode=require
