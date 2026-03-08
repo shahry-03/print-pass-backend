@@ -11,7 +11,7 @@ spring:
           enabled: true
           lower-case-service-id: true
 
-      # 🌟 NAYI LINE: React ko allow karne ki CORS Setting 🌟
+      # 🌟 THE WINNING MOVE: React Frontend Allow List
       globalcors:
         corsConfigurations:
           '[/**]':
@@ -27,31 +27,32 @@ spring:
             allowedHeaders: "*"
             allowCredentials: true
 
-      # Yahan hum Gateway ko rasta bata rahe hain
-      # user-service mein filter mat lagayega, warna login bhi band ho jayega!
       routes:
+        # 1. User/Auth Service
         - id: user-service
-          uri: lb://USER-SERVICE   # 'lb' ka matlab hai Load Balancer (Eureka se address dhoondho)
+          uri: lb://USER-SERVICE
           predicates:
-            - Path=/api/users/** # Agar URL mein yeh aaye, toh USER-SERVICE ko bhej do
+            - Path=/api/users/**, /api/auth/**
 
-        # NAYA Route shop-service ke liye
+        # 2. Shop Service
         - id: shop-service
           uri: lb://SHOP-SERVICE
           predicates:
             - Path=/api/shops/**
-          filters:
-            - AuthenticationFilter   # NAYI LINE: Guard yahan khara hoga!
+          # 💡 Jadoo: Yahan filter nahi likha, Java Global Filter khud handle karega!
 
-        # NAYA Route job-service ke liye
+        # 3. Job Service
         - id: job-service
           uri: lb://JOB-SERVICE
           predicates:
             - Path=/api/jobs/**
-          filters:
-            - AuthenticationFilter   # NAYI LINE: Guard yahan khara hoga!
+
+# 🔐 JWT Secret Key (Java code ab yahan se key parhega)
+jwt:
+  secret: printpass-super-secret-key-must-be-very-long-and-secure-1234567890
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      # 🛡️ THE UPGRADE: Ab hum password ke sath Discovery Server jayenge!
+      defaultZone: http://admin:admin123@localhost:8761/eureka/
