@@ -6,28 +6,29 @@
     <modelVersion>4.0.0</modelVersion>
 
     <!-- ── Parent ─────────────────────────────────────────── -->
-    <parent>
-        <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.3</version>
-        <relativePath/>
-    </parent>
+   <parent>
+       <groupId>org.springframework.boot</groupId>
+       <artifactId>spring-boot-starter-parent</artifactId>
+       <version>3.2.5</version>
+       <relativePath/>
+   </parent>
 
-    <!-- ── Project coords ────────────────────────────────── -->
+    <!-- ── Project identity ────────────────────────────────── -->
     <groupId>com.printpass</groupId>
-    <artifactId>backend</artifactId>
+    <artifactId>printpass-parent</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>PrintPass :: Backend Parent</name>
 
-    <!-- ── Modules ───────────────────────────────────────── -->
+    <!-- ── Child Services / Modules ───────────────────────────────────────── -->
     <modules>
-        <module>printpass-common</module>
+<!--        <module>printpass-common</module>-->
         <module>discovery-server</module>
         <module>api-gateway</module>
         <module>user-service</module>
-        <module>shop-service</module>
+<!--        <module>shop-service</module>-->
         <module>job-service</module>
+        <module>auth-service</module>
     </modules>
 
     <!-- ── Global properties ─────────────────────────────── -->
@@ -37,7 +38,7 @@
         <jjwt.version>0.12.3</jjwt.version>
     </properties>
 
-    <!-- ── Dependency Management (Spring Cloud BOM) ──────── -->
+    <!-- ── Dependency Versions Management (Spring Cloud BOM) ──────── -->
     <dependencyManagement>
         <dependencies>
             <!-- Spring Cloud BOM -->
@@ -69,4 +70,40 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <!-- ✅ Common Dependencies (Sab Services ko milengi) -->
+    <dependencies>
+        <!-- Lombok — Boilerplate code kam karo -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Testing -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <! ── Build plugins (Optional, for common build configuration) ─────────────────────────────── -->
+    <build>
+        <plugins>
+            <!-- Spring Boot Maven Plugin -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

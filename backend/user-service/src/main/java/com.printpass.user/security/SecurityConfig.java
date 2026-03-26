@@ -1,4 +1,4 @@
-package com.printpass.user.security;
+package main.java.com.printpass.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

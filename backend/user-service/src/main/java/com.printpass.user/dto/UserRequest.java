@@ -1,6 +1,6 @@
-package com.printpass.user.dto;
+package main.java.com.printpass.dto;
 
-import com.printpass.user.enums.Role;
+import main.java.com.printpass.enums.Role;
 import lombok.Data;
 
 @Data

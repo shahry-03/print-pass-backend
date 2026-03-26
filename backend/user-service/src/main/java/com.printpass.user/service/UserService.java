@@ -1,11 +1,11 @@
-package com.printpass.user.service;
+package main.java.com.printpass.service;
 
-import com.printpass.user.dto.AuthRequest;  //new import for login request
-import com.printpass.user.dto.UserRequest;
-import com.printpass.user.dto.UserResponse;
-import com.printpass.user.entity.User;
-import com.printpass.user.repository.UserRepository;
-import com.printpass.user.security.JwtService;  //new import for JWT token generation
+import main.java.com.printpass.dto.AuthRequest;  //new import for login request
+import main.java.com.printpass.dto.UserRequest;
+import main.java.com.printpass.dto.UserResponse;
+import main.java.com.printpass.entity.User;
+import main.java.com.printpass.repository.UserRepository;
+import main.java.com.printpass.security.JwtService;  //new import for JWT token generation
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;

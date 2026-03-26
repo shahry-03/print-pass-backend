@@ -1,4 +1,4 @@
-package com.printpass.user.security;
+package main.java.com.printpass.security;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

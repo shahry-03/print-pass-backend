@@ -1,6 +1,6 @@
-package com.printpass.user.repository;
+package main.java.com.printpass.repository;
 
-import com.printpass.user.entity.User;
+import main.java.com.printpass.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

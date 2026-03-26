@@ -1,9 +1,9 @@
 package com.printpass.user.controller;
 
-import com.printpass.user.dto.AuthRequest;
-import com.printpass.user.dto.UserRequest;
-import com.printpass.user.dto.UserResponse;
-import com.printpass.user.service.UserService;
+import main.java.com.printpass.dto.AuthRequest;
+import main.java.com.printpass.dto.UserRequest;
+import main.java.com.printpass.dto.UserResponse;
+import main.java.com.printpass.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

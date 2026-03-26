@@ -1,4 +1,4 @@
-package com.printpass.user.dto;
+package main.java.com.printpass.dto;
 
 import lombok.Data;
 
