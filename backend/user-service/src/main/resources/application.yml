@@ -1,9 +1,10 @@
 server:
-  port: 8082
+  port: 8082     # Decided to use port 8082 for the user service in HLD
 spring:
   application:
-    name: user-service
+    name: user-service  # Eureka service name, important for service discovery and logging
 
+    # Database configuration for PostgreSQL
   datasource:
     # 1. Shuru mein 'jdbc:' lagana zaroori hai
     # 2. @ sign se pehle wala hissa (username/password) yahan se nikal diya hai
@@ -12,11 +13,50 @@ spring:
     password: npg_Zmkp2RhIoA1n
     driver-class-name: org.postgresql.Driver
 
+
+  # JPA and Hibernate configuration for PostgreSQL
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: update      # Development ke liye 'update' theek hai, production mein 'validate' ya 'none' use karna chahiye
+    show-sql: true          # Development ke liye SQL queries dekhna useful hota hai, production mein false kar dena chahiye
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
+        format_sql: true    # SQL queries ko formatted way mein dikhane ke liye
+
+
+
+ # Eureka client configuration for service discovery
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/  # Eureka server ka URL
+    register-with-eureka: true  # Service ko Eureka server mein register karna
+    fetch-registry: true       # Eureka server se registry information fetch karna
+
+
+#JWT secret key configuration for token generation and validation
+application:
+  security:
+    jwt:
+      secret: my-super-secret-key-for-printgrid-user-service-2026  # JWT secret key, production mein isse environment variable ya secure vault se lena chahiye
+      expiration: 86400000  # JWT token expiration time in milliseconds (24 hours)
+
+
+#Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics  # Actuator endpoints ko expose karna
+    endpoint:
+      health:
+        show-details: always  # Health endpoint details hamesha dikhana, development ke liye useful hai
+
+#API documentation
+springdoc:
+  api-docs:
+    path: /api-docs  # OpenAPI documentation endpoint
+  swagger-ui:
+    path: /swagger-ui.html  # Swagger UI endpoint
+

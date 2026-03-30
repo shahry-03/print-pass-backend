@@ -28,7 +28,7 @@
         <module>user-service</module>
 <!--        <module>shop-service</module>-->
         <module>job-service</module>
-        <module>auth-service</module>
+<!--        <module>auth-service</module>-->   <!-- jab auth-service ready ho jaye to uska module add kar dena -->
     </modules>
 
     <!-- ── Global properties ─────────────────────────────── -->
@@ -86,9 +86,15 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <!-- Actuator — For Production and Deployment Health check up -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
     </dependencies>
 
-    <! ── Build plugins (Optional, for common build configuration) ─────────────────────────────── -->
+    <!-- ── Build plugins (Optional, for common build configuration) ─────────────────────────────── -->
     <build>
         <plugins>
             <!-- Spring Boot Maven Plugin -->
