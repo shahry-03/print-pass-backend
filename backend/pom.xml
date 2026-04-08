@@ -28,14 +28,16 @@
         <module>user-service</module>
 <!--        <module>shop-service</module>-->
         <module>job-service</module>
-<!--        <module>auth-service</module>-->   <!-- jab auth-service ready ho jaye to uska module add kar dena -->
+        <module>auth-service</module>
+        <module>api-gateway</module>
     </modules>
 
     <!-- ── Global properties ─────────────────────────────── -->
     <properties>
         <java.version>17</java.version>
         <spring-cloud.version>2023.0.0</spring-cloud.version>
-        <jjwt.version>0.12.3</jjwt.version>
+        <jjwt.version>0.11.5</jjwt.version>
+        <minio.version>8.5.7</minio.version>
     </properties>
 
     <!-- ── Dependency Versions Management (Spring Cloud BOM) ──────── -->

@@ -40,6 +40,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.POST, "/api/v1/shops/register").permitAll()
                                 // INTERNAL — Service to Service (Internal network only)
                                 .requestMatchers("/api/v1/internal/**").permitAll()
+                                .requestMatchers("/api/v1/otp/**").permitAll()   // ← OTP endpoints public
 
                         //  NEW RASTA: Swagger & API Docs (Development ke liye open)
                         .requestMatchers(

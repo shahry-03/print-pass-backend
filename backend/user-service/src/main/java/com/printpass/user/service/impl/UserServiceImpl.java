@@ -1,42 +1,42 @@
 package com.printpass.user.service.impl;
 
 import com.printpass.user.dto.response.InternalUserResponse;
+import com.printpass.user.entity.PrintShopProfile;
 import com.printpass.user.entity.User;
 import com.printpass.user.enums.Role;
 import com.printpass.user.exception.DuplicateResourceException;
 import com.printpass.user.exception.ResourceNotFoundException;
+import com.printpass.user.repository.PrintShopProfileRepository;
 import com.printpass.user.repository.UserRepository;
 import com.printpass.user.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     // Dependencies hamesha 'private final' honi chahiye
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final PrintShopProfileRepository printShopProfileRepository;
 
-    @Autowired
-    public UserServiceImpl(PasswordEncoder passwordEncoder, UserRepository userRepository) {
-        this.passwordEncoder = passwordEncoder;
-        this.userRepository = userRepository;
-    }
 
     @Override
     public User createUser(String email, String password, Role role) {
         // 1. Pehle check karein ke kahin email pehle se toh nahi?
         if(userRepository.existsByEmail(email)) {
-            throw new DuplicateResourceException("Email already exists!" + email);
+            throw new DuplicateResourceException("Email already exists! " + email);
         }
         // 2. User Object banana
         User user = User.builder()
                 .email(email)
                 .password(passwordEncoder.encode(password))  //BCrycpt Hash
-                .isActive(true)   // Default active status
+                .isActive(false)   // ← OTP verify hone tak inactive
+                .emailVerified(false) // Initially email is not verified
                 .role(role)
                 .build();
 
@@ -74,5 +74,16 @@ public class UserServiceImpl implements UserService {
 
         // 3. Updated User ko wapas database me save kardo
         userRepository.save(user);
+    }
+
+    @Override
+    public boolean isShopVerified(UUID shopId) {
+        PrintShopProfile shop = printShopProfileRepository
+                .findById(shopId)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Shop not found: " + shopId));
+
+        // Shop active bhi honi chahiye aur verified bhi!
+        return shop.isVerified() && shop.isActive();
     }
 }

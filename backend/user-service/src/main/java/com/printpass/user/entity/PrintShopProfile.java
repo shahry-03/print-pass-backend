@@ -43,8 +43,8 @@ public class PrintShopProfile {
     @Column(name = "owner_name", nullable = false)
     private String ownerName;
 
-    @NotBlank
-    @Pattern(regexp = "^\\d{10,15}$" , message = "Invalid Phone Number")
+    @NotBlank(message = "Phone number is required")
+    @Pattern(regexp = "^\\+?[0-9]{10,15}$", message = "Invalid phone number format")
     @Column(nullable = false)
     private String phone;
 

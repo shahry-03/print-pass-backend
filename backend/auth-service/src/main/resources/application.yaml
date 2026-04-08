@@ -1,0 +1,59 @@
+spring:
+  application:
+    name: auth-service      # Eureka mein is naam se register hoga
+server:
+  port: 8081       #HLD me decide kiya tha ki auth-service 8081 port pe chalega
+
+  #  Auth Service ka koi Database nahi!
+  # JPA/PostgreSQL dependency nahi hai, isliye database configuration ki zarurat nahi hai.
+
+  # Eureka Client Configuration
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/   # Eureka server ka URL
+    register-with-eureka: true   # Apne aap ko Eureka server me register kare
+    fetch-registry: true        # Eureka server se registry information lene ki permission de
+  instance:
+    prefer-ip-address: true  # Apne IP address ko prefer kare Eureka server
+                             # me register karte waqt, hostname ke bajaye
+
+  # JWT Configuration
+  # secret key same hone chahiye user-service wali
+application:
+  security:
+    jwt:
+      secret-key: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      expiration: 86400000   # 24 hours in milliseconds
+
+
+  # OpenFeign Configuration
+feign:
+  client:
+    config:
+      default:
+        connect-timeout: 5000   # Connection timeout in milliseconds (5 seconds)  Agar 5 second tak jawab na aaye toh timeout
+        read-timeout: 5000      # Read timeout in milliseconds (5 seconds)
+
+
+  #Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info   # Actuator endpoints jo expose karne hain
+  endpoint:
+    health:
+      show-details: always   # Health endpoint ke details hamesha dikhaye
+
+  # API Documentation Configuration
+springdoc:
+  api-docs:
+    path: /v3/api-docs   # OpenAPI documentation ke liye path
+  swagger-ui:
+      path: /swagger-ui.html   # Swagger UI ke liye path
+
+  # Logging Configuration
+logging:
+  level:
+    com.printpass.authservice: DEBUG   # Auth service ke liye debug level logging

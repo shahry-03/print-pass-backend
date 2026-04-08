@@ -32,6 +32,9 @@ public class User {
     @Column(nullable = false)
     private Role role; // STUDENT ya VENDOR
 
+    @Column(name = "email_verified", nullable = false)
+    private boolean emailVerified = false;
+
 //    // PrintPass Wallet ka balance
 //    @Column(nullable = false)
 //    private BigDecimal walletBalance;

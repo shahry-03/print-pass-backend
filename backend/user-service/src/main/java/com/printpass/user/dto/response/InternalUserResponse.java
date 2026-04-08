@@ -1,5 +1,6 @@
 package com.printpass.user.dto.response;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.printpass.user.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -18,6 +19,7 @@ public class InternalUserResponse {
     private String email;
     private String password;  // ← Hashed password — Auth Service verify karega
     private Role role;
+    @JsonProperty("isActive")
     private boolean isActive;
 
 }

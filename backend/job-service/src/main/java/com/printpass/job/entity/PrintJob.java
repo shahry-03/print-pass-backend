@@ -2,53 +2,68 @@ package com.printpass.job.entity;
 
 import com.printpass.job.enums.JobStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
+import lombok.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
-@Table(name = "print_jobs")
-@Data
+@Table(name = "print_jobs",
+        indexes = {
+                // PIN se file dhundhne ke liye — Sabse zyada use hoga!
+                @Index(name = "idx_secret_key", columnList = "secret_key"),
+                // Shop ID se jobs dhundhne ke liye
+                @Index(name = "idx_shop_id", columnList = "shop_id"),
+                // Status se jobs filter karne ke liye
+                @Index(name = "idx_job_status", columnList = "job_status"),
+                // Expire hone wali jobs dhundhne ke liye
+                @Index(name = "idx_expires_at", columnList = "expires_at")
+        })
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class PrintJob {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
-    @Column(nullable = false)
-    private Long studentId; // Kisne order diya? (User Service se)
+    // ✅ 6-digit secret PIN — Unique hona chahiye!
+    @Column(name = "secret_key", nullable = false, unique = true)
+    private String secretKey;
 
-    @Column(nullable = true) // kiyunki hum version 1.0 me shop ka jhanjhat nahi chahte, toh isko optional rakhte hain. Future me agar zarurat padi toh isko mandatory bana denge.
-    private Long shopId; // Kis dukan par order diya? (Shop Service se)
+    // ✅ Original file ka naam (e.g., "AI_Notes.pdf")
+    @Column(name = "file_name", nullable = false)
+    private String fileName;
 
-    @Column(nullable = false)
-    private String documentName; // File ka naam (maslan "FYP_Report.pdf")
+    // ✅ DigitalOcean Spaces ka file URL
+    @Column(name = "file_url", nullable = false)
+    private String fileUrl;
 
-    @Column(nullable = false)
-    private Integer totalPages; // Kitne pages hain?
-
-    @Column(nullable = false)
-    private boolean isColor; // Color print hai ya Black & White?
-
-    @Column(nullable = false)
-    private BigDecimal totalCost; // Total bill kitna bana?
-
+    // ✅ Job ka current status
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private JobStatus status; // Abhi order ka kya status hai?
+    @Column(name = "job_status", nullable = false)
+    private JobStatus jobStatus;
 
-    // Naya Column: 6-Digit Secret PIN
-    @Column(nullable = false, unique = true, length = 6)
-    private String pin;
+    // ✅ Kaun si shop ne print kiya
+    // User Service se verify hoga
+    @Column(name = "shop_id")
+    private UUID shopId;
 
-    @CreationTimestamp
+    // ✅ PIN kab expire hoga (24 hours)
+    @Column(name = "expires_at", nullable = false)
+    private LocalDateTime expiresAt;
+
+    // ✅ Job kab bani
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
+    @PrePersist
+    public void onCreate() {
+        createdAt = LocalDateTime.now();
+        jobStatus = JobStatus.PENDING;    // ← Default status
+        expiresAt = LocalDateTime.now().plusHours(24); // ← 24 hours valid
+    }
 }

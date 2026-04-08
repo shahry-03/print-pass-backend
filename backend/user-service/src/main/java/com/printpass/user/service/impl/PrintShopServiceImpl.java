@@ -9,6 +9,7 @@ import com.printpass.user.enums.Role;
 import com.printpass.user.exception.ResourceNotFoundException;
 import com.printpass.user.exception.UnauthorizedException;
 import com.printpass.user.repository.PrintShopProfileRepository;
+import com.printpass.user.service.OtpService;
 import com.printpass.user.service.PrintShopService;
 import com.printpass.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ import static java.util.stream.Collectors.toList;
 public class PrintShopServiceImpl implements PrintShopService {
     private final PrintShopProfileRepository printShopProfileRepository;
     private final UserService userService;
+    private final OtpService otpService;
 
     @Override
     @Transactional
@@ -56,6 +58,8 @@ public class PrintShopServiceImpl implements PrintShopService {
 
         //4.  Dukan ko database me save karo aur RETURNED object ko pakdo
         PrintShopProfile savedShop = printShopProfileRepository.save(printShopProfile);
+        // 🔥 Send OTP asynchronously after successful registration
+        otpService.sendOtpAsync(newUser.getEmail());
         //5. ShopResponse return karo (savedShop se data nikal kar)
         return ShopResponse.builder()
                 .id(savedShop.getId())

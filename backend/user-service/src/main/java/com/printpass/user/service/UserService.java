@@ -15,4 +15,6 @@ public interface UserService {
 
     // Admin — User active/inactive karo
     void toggleUserStatus(UUID userId);
+
+    boolean isShopVerified(UUID shopId);
 }

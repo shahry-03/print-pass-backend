@@ -1,23 +1,18 @@
 server:
-  port: 8084
+  port: 8084                        # Job Service Port
 
 spring:
   application:
-    name: job-service
+    name: job-service               # Eureka Registration Name
 
-  # 🌟 NAYI LINES: Bari files upload karne ki permission
-  servlet:
-    multipart:
-      max-file-size: 50MB
-      max-request-size: 50MB
-
+  # ✅ Cloud Database (NeonDB) -
   datasource:
-    # Dekhein yahan end mein 'jobdb' likha hai
     url: jdbc:postgresql://ep-divine-resonance-a12py9f3.ap-southeast-1.aws.neon.tech/jobdb?sslmode=require
     username: neondb_owner
     password: npg_Zmkp2RhIoA1n
     driver-class-name: org.postgresql.Driver
 
+  # ✅ JPA Configuration
   jpa:
     hibernate:
       ddl-auto: update
@@ -27,19 +22,50 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
 
+  # ✅ Large File Uploads Permission (Perfect for Printing)
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+# ✅ Eureka Discovery
 eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
 
-# DigitalOcean Spaces (S3) Configuration
-cloud:
-  digitalocean:
-    spaces:
-      # Agar aapne Singapore select kiya tha toh sgp1 rahega, warna lon1 kar dijiyega
-      endpoint: sgp1.digitaloceanspaces.com
-      region: sgp1
-      # Yahan apni keys aur bucket ka naam replace karein
-      access-key: DO801H2PZNRUZGXDTTUU
-      secret-key: 3jkc3zc/qm7zmCmdOwUuC50EpmnJjn6PugulQCwH0wg
-      bucket: printpass-storage
+# ✅ JWT Secret (Same as Auth & User Service) - From V1
+application:
+  security:
+    jwt:
+      secret-key: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+
+# ✅ DigitalOcean Spaces (S3) mapped to MinIO Client
+minio:
+  url: https://sgp1.digitaloceanspaces.com  # DO Endpoint
+  access-key: DO801H2PZNRUZGXDTTUU        # DO Access Key
+  secret-key: 3jkc3zc/qm7zmCmdOwUuC50EpmnJjn6PugulQCwH0wg        # DO Secret Key
+  bucket-name: printpass-storage            # DO Bucket
+
+# ✅ OpenFeign Resiliency -
+feign:
+  client:
+    config:
+      default:
+        connect-timeout: 5000
+        read-timeout: 5000
+
+# ✅ API Documentation & Monitoring -
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+
+

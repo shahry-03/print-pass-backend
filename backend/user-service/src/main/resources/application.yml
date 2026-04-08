@@ -12,6 +12,9 @@ spring:
     username: neondb_owner
     password: npg_Zmkp2RhIoA1n
     driver-class-name: org.postgresql.Driver
+    hikari:
+      max-lifetime: 600000 # 10 minutes se pehle connection refresh karega
+      keepalive-time: 300000 # Har 5 minute baad database ko 'hello' bolega taake wo soye na
 
 
   # JPA and Hibernate configuration for PostgreSQL
@@ -24,9 +27,20 @@ spring:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true    # SQL queries ko formatted way mein dikhane ke liye
 
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${MAIL_USERNAME:shahrayarsahito7@gmail.com}
+    password: ${MAIL_PASSWORD:pwxqzgownpdyxilx}  # Yahan apna 16-digit code bina spaces ke likhein
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
 
 
- # Eureka client configuration for service discovery
+  # Eureka client configuration for service discovery
 eureka:
   client:
     service-url:
@@ -39,7 +53,7 @@ eureka:
 application:
   security:
     jwt:
-      secret: my-super-secret-key-for-printgrid-user-service-2026  # JWT secret key, production mein isse environment variable ya secure vault se lena chahiye
+      secret-key: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970  # JWT secret key, production mein isse environment variable ya secure vault se lena chahiye
       expiration: 86400000  # JWT token expiration time in milliseconds (24 hours)
 
 
@@ -53,10 +67,23 @@ management:
       health:
         show-details: always  # Health endpoint details hamesha dikhana, development ke liye useful hai
 
+
+
+
+
+
+
+app:
+  admin:
+    # Syntax: ${ENVIRONMENT_VARIABLE_NAME:default_value}
+    email: ${ADMIN_EMAIL:admin@printpass.com}
+    password: ${ADMIN_PASSWORD:SuperSecureAdminPass!123}
+
+
 #API documentation
-springdoc:
-  api-docs:
-    path: /api-docs  # OpenAPI documentation endpoint
-  swagger-ui:
-    path: /swagger-ui.html  # Swagger UI endpoint
+#springdoc:
+#  api-docs:
+#    path: /api-docs  # OpenAPI documentation endpoint
+#  swagger-ui:
+#    path: /swagger-ui.html  # Swagger UI endpoint
 
