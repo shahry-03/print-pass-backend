@@ -29,7 +29,6 @@
 <!--        <module>shop-service</module>-->
         <module>job-service</module>
         <module>auth-service</module>
-        <module>api-gateway</module>
     </modules>
 
     <!-- ── Global properties ─────────────────────────────── -->

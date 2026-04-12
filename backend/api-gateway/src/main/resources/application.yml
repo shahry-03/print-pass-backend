@@ -1,5 +1,5 @@
 server:
-  port: 8080                      # HLD mein decide kiya tha
+  port: ${PORT:8080}                      # DO automatically port inject kar sakega
 
 spring:
   application:
@@ -9,7 +9,7 @@ spring:
     gateway:
       discovery:
         locator:
-          enabled: true           # Service discovery se routes automatically generate karo
+          enabled: true
           lower-case-service-id: true
       routes:
         # ========== AUTH SERVICE ==========
@@ -22,7 +22,6 @@ spring:
               args:
                 name: authService
                 fallbackUri: forward:/fallback/auth
-          # Yahan Jwt filter NAHI lagana, kyunke login ke liye token nahi chahiye
 
         # ========== USER SERVICE ==========
         - id: user-service
@@ -50,35 +49,38 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/
+      # Localhost ki jagah ab DO par EUREKA_URI variable kaam aayega
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka/}
   instance:
     prefer-ip-address: true
 
-# JWT Configuration (same secret key as other services)
+# JWT Configuration
 application:
   security:
     jwt:
-      secret-key: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970
+      # Secret key ab secure environment variable se aayegi
+      secret-key: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
 
 # Resilience4j Global Configuration
 resilience4j:
   timelimiter:
     configs:
       default:
-        timeoutDuration: 60s  # 👈 Ab Gateway har service ka 60 second wait karega!
+        timeoutDuration: ${GATEWAY_TIMEOUT:10s}  # Default 10s, cloud se 60s kar sakte hain agar chahein
 
-# Actuator
+# Actuator (Only keeping health safe for production monitoring)
 management:
   endpoints:
     web:
       exposure:
-        include: health, info, gateway
+        include: health, info
   endpoint:
     health:
       show-details: always
 
-# Logging
+# Logging (Production ready)
 logging:
   level:
-    com.printpass.gateway: DEBUG
-    org.springframework.cloud.gateway: DEBUG
+    root: INFO
+    com.printpass.gateway: INFO
+    # org.springframework.cloud.gateway: DEBUG # Isko sirf local issue fix karne ke liye uncomment karna

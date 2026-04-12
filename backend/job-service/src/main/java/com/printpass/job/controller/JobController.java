@@ -31,6 +31,17 @@ public class JobController {
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+    // ✅ Public endpoint — Student purane PIN se naya generate karega
+    @PostMapping("/reprint/{oldPin}")
+    public ResponseEntity<JobResponse> reprintJob(
+            @PathVariable("oldPin") String oldPin) {
+
+        log.debug("Reprint request for old PIN: {}", oldPin);
+
+        JobResponse response = jobService.reprintJob(oldPin);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
 
     // ✅ JWT Protected — Print shop PIN enter karega, file aayegi
     @GetMapping("/{pin}")

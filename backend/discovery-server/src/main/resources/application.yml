@@ -1,45 +1,39 @@
 server:
-    port: 8761   # Eureka server default port
+  port: ${PORT:8761}
+
 spring:
   application:
     name: discovery-server
-
-#  security:
-#    user:
-#      name: admin
-#      password: admin123
+  # Cloud par Eureka ko secure karna lazmi hai!
+  security:
+    user:
+      name: ${EUREKA_USERNAME:admin}
+      password: ${EUREKA_PASSWORD:admin123}
 
 eureka:
   instance:
-    hostname: localhost
+    # DO par hum EUREKA_HOSTNAME variable pass karenge (e.g., aapka DO App URL ya IP)
+    hostname: ${EUREKA_HOSTNAME:localhost}
+    prefer-ip-address: true
   client:
     register-with-eureka: false   # Main khud boss hun, mujhe list mein mat dalo
     fetch-registry: false         # Mujhe kisi aur se list nahi mangni
-#    service-url:
-#      # Baqi services is secure link ke zariye mujh se connect hongi
-#      defaultZone: http://admin:admin123@localhost:8761/eureka/
   server:
     wait-time-in-ms-when-sync-empty: 0
-    enable-self-preservation: false # Dev environment ke liye theek hai
+    enable-self-preservation: true # 👈 PRODUCTION ke liye TRUE lazmi hai
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health, info, metrics
   endpoint:
-      health:
-        show-details: always
-#management:
-#  endpoints:
-#    web:
-#      exposure:
-#        include: health,info,metrics
-#  endpoint:
-#    health:
-#      show-details: always
-#
-#logging:
-#  level:
-#    com.netflix.eureka: WARN
-#    com.netflix.discovery: WARN
+    health:
+      show-details: always
+
+# Logging (Production mein WARN pe rakhein taake disk space na bhare)
+logging:
+  level:
+    root: INFO
+    com.netflix.eureka: WARN
+    com.netflix.discovery: WARN

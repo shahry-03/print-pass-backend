@@ -1,37 +1,36 @@
 server:
-  port: 8082     # Decided to use port 8082 for the user service in HLD
+  port: ${PORT:8082}
+
 spring:
   application:
-    name: user-service  # Eureka service name, important for service discovery and logging
+    name: user-service
 
-    # Database configuration for PostgreSQL
+  # ✅ Database configuration (Secure)
   datasource:
-    # 1. Shuru mein 'jdbc:' lagana zaroori hai
-    # 2. @ sign se pehle wala hissa (username/password) yahan se nikal diya hai
-    url: jdbc:postgresql://ep-divine-resonance-a12py9f3-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require
-    username: neondb_owner
-    password: npg_Zmkp2RhIoA1n
+    url: ${DB_URL:jdbc:postgresql://ep-divine-resonance-a12py9f3-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require}
+    username: ${DB_USERNAME:neondb_owner}
+    password: ${DB_PASSWORD:npg_Zmkp2RhIoA1n} # Reminder: Change this in NeonDB!
     driver-class-name: org.postgresql.Driver
     hikari:
-      max-lifetime: 600000 # 10 minutes se pehle connection refresh karega
-      keepalive-time: 300000 # Har 5 minute baad database ko 'hello' bolega taake wo soye na
+      max-lifetime: 600000
+      keepalive-time: 300000
 
-
-  # JPA and Hibernate configuration for PostgreSQL
+  # ✅ JPA Configuration (Production Safe)
   jpa:
     hibernate:
-      ddl-auto: update      # Development ke liye 'update' theek hai, production mein 'validate' ya 'none' use karna chahiye
-    show-sql: true          # Development ke liye SQL queries dekhna useful hota hai, production mein false kar dena chahiye
+      ddl-auto: ${DDL_AUTO:validate}   # Production mein validate use karein
+    show-sql: ${SHOW_SQL:false}        # Logs clean rakhne ke liye false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true    # SQL queries ko formatted way mein dikhane ke liye
+        format_sql: false
 
+  # ✅ Mail Configuration (Secure)
   mail:
     host: smtp.gmail.com
     port: 587
     username: ${MAIL_USERNAME:shahrayarsahito7@gmail.com}
-    password: ${MAIL_PASSWORD:pwxqzgownpdyxilx}  # Yahan apna 16-digit code bina spaces ke likhein
+    password: ${MAIL_PASSWORD:your-new-app-password}  # DO dashboard mein set karein
     properties:
       mail:
         smtp:
@@ -39,51 +38,46 @@ spring:
           starttls:
             enable: true
 
-
-  # Eureka client configuration for service discovery
+# ✅ Eureka client configuration (Secure)
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka/  # Eureka server ka URL
-    register-with-eureka: true  # Service ko Eureka server mein register karna
-    fetch-registry: true       # Eureka server se registry information fetch karna
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka/}
+    register-with-eureka: true
+    fetch-registry: true
 
-
-#JWT secret key configuration for token generation and validation
+# ✅ JWT Configuration (Secure)
 application:
   security:
     jwt:
-      secret-key: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970  # JWT secret key, production mein isse environment variable ya secure vault se lena chahiye
-      expiration: 86400000  # JWT token expiration time in milliseconds (24 hours)
+      secret-key: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+      expiration: ${JWT_EXPIRATION:86400000}
 
-
-#Actuator
+# Actuator
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics  # Actuator endpoints ko expose karna
-    endpoint:
-      health:
-        show-details: always  # Health endpoint details hamesha dikhana, development ke liye useful hai
+        include: health, info
+  endpoint:
+    health:
+      show-details: always
 
-
-
-
-
-
-
+# Admin Setup (Already perfect!)
 app:
   admin:
-    # Syntax: ${ENVIRONMENT_VARIABLE_NAME:default_value}
     email: ${ADMIN_EMAIL:admin@printpass.com}
-    password: ${ADMIN_PASSWORD:SuperSecureAdminPass!123}
+    password: ${ADMIN_PASSWORD:SuperSecureAdminPass123!} # DO dashboard mein set karein
 
+# API documentation (Uncommented for easier testing on cloud if needed)
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
 
-#API documentation
-#springdoc:
-#  api-docs:
-#    path: /api-docs  # OpenAPI documentation endpoint
-#  swagger-ui:
-#    path: /swagger-ui.html  # Swagger UI endpoint
-
+# Production Logging
+logging:
+  level:
+    root: INFO
+    com.printpass.user: INFO

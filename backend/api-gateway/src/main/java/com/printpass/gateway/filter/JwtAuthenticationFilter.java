@@ -63,6 +63,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                 "/api/v1/otp/verify",
                 "/api/v1/otp/resend",
                 "/api/v1/jobs/upload",
+                "/api/v1/jobs/reprint",
                 "/actuator/health"
         );
 

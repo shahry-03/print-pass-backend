@@ -11,6 +11,9 @@ public interface JobService {
     // Student file upload karega → PIN milega
     JobResponse uploadFile(MultipartFile file);
 
+    // Student purane PIN se naya PIN generate karega
+    JobResponse reprintJob(String oldPin);
+
     // Print shop PIN enter karega → file aayegi
     PrintResponse getFileByPin(String secretKey, UUID shopId);
 

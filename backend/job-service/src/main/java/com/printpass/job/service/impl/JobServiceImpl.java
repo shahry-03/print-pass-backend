@@ -66,6 +66,42 @@ public class JobServiceImpl implements JobService {
                 .createdAt(savedJob.getCreatedAt())
                 .build();
     }
+    @Override
+    @Transactional
+    public JobResponse reprintJob(String oldPin) {
+        log.debug("Reprinting job for old PIN: {}", oldPin);
+
+        // 1. Find the old job
+        PrintJob oldJob = printJobRepository.findBySecretKey(oldPin)
+                .orElseThrow(() -> new InvalidPinException("Invalid PIN: " + oldPin));
+
+        // 2. Generate a new 6-digit PIN
+        String newSecretKey;
+        do {
+            newSecretKey = PinGenerator.generateSixDigitPin();
+        } while (printJobRepository.existsBySecretKey(newSecretKey));
+
+        // 3. Create a new Job entity
+        PrintJob newJob = PrintJob.builder()
+                .secretKey(newSecretKey)
+                .fileName(oldJob.getFileName())
+                .fileUrl(oldJob.getFileUrl())
+                .jobStatus(JobStatus.PENDING)
+                .expiresAt(LocalDateTime.now().plusHours(24))
+                .build();
+
+        PrintJob savedJob = printJobRepository.save(newJob);
+
+        // 4. Return new PIN job details
+        return JobResponse.builder()
+                .id(savedJob.getId())
+                .secretKey(savedJob.getSecretKey())
+                .fileName(savedJob.getFileName())
+                .jobStatus(savedJob.getJobStatus())
+                .expiresAt(savedJob.getExpiresAt())
+                .createdAt(savedJob.getCreatedAt())
+                .build();
+    }
 
     @Override
     @Transactional
