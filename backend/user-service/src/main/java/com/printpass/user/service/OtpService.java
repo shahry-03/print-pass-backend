@@ -30,10 +30,8 @@ public class OtpService {
 
     private final EmailVerificationTokenRepository tokenRepository;
     private final UserRepository userRepository;
+    private final EmailService emailService; // 👈 Nayi service inject ki
 
-    // Purana JavaMailSender aur fromEmail hata diya, ab direct Resend API key aayegi
-    @Value("${resend.api.key}")
-    private String resendApiKey;
 
     private static final SecureRandom random = new SecureRandom();
 
@@ -43,52 +41,52 @@ public class OtpService {
     }
 
     // 🔥 ASYNC: Background mein chalega taake API fauran response de
-    @Async
-    @Transactional // Yeh async hone ki wajah se apni nayi independent transaction banayega
-    public void sendOtpAsync(String email) {
-        log.info("🚀 DEBUG: sendOtpAsync trigger ho gaya for email: {}", email); // 👈 Yeh line add karein
-        log.debug("Starting async OTP send to {}", email);
-
-        // 1. Purane unused tokens delete karo taake database clean rahe
-        tokenRepository.deleteByEmail(email);
-
-        // 2. Naya OTP banao aur database mein save karo
-        String otp = generateOtp();
-        LocalDateTime expiry = LocalDateTime.now().plusMinutes(10); // 10 minutes limit
-
-        EmailVerificationToken token = EmailVerificationToken.builder()
-                .email(email)
-                .otp(otp)
-                .expiryDate(expiry)
-                .used(false)
-                .build();
-
-        tokenRepository.save(token);
-
-        // 3. Resend SDK Setup & Payload
-        Resend resend = new Resend(resendApiKey);
-        CreateEmailOptions params = CreateEmailOptions.builder()
-                .from("PrintPass <onboarding@resend.dev>") // ⚠️ Testing ke waqt yahi rakhna hai!
-                .to(email) // ⚠️ Testing me yahan sirf apka Resend account email hi hona chahiye
-                .subject("PrintPass Email Verification")
-                .html("<div style='font-family: Arial, sans-serif; text-align: center; padding: 20px;'>" +
-                        "<h2>Welcome to PrintGrid! 🖨️</h2>" +
-                        "<p>Your OTP for email verification is:</p>" +
-                        "<h1 style='color: #4F46E5; letter-spacing: 5px; font-size: 32px;'>" + otp + "</h1>" +
-                        "<p>This OTP is valid for 10 minutes. Please do not share it with anyone.</p></div>")
-                .build();
-
-        // 4. Bhejo aur Error Handle karo
-        try {
-            CreateEmailResponse data = resend.emails().send(params);
-            log.info("✅ OTP sent successfully to {} in background via Resend (ID: {})", email, data.getId());
-        } catch (ResendException e) {
-            // 🛡️ SECURITY MOVE: Agar email fail ho, toh exception throw mat karo!
-            // Warna user ka register process rollback ho jayega.
-            // User baad mein 'Resend OTP' click karke dobara mangwa sakta hai.
-            log.error("❌ Failed to send OTP to {}: {}", email, e.getMessage());
-        }
-    }
+//    @Async
+//    @Transactional // Yeh async hone ki wajah se apni nayi independent transaction banayega
+//    public void sendOtpAsync(String email) {
+//        log.info("🚀 DEBUG: sendOtpAsync trigger ho gaya for email: {}", email); // 👈 Yeh line add karein
+//        log.debug("Starting async OTP send to {}", email);
+//
+//        // 1. Purane unused tokens delete karo taake database clean rahe
+//        tokenRepository.deleteByEmail(email);
+//
+//        // 2. Naya OTP banao aur database mein save karo
+//        String otp = generateOtp();
+//        LocalDateTime expiry = LocalDateTime.now().plusMinutes(10); // 10 minutes limit
+//
+//        EmailVerificationToken token = EmailVerificationToken.builder()
+//                .email(email)
+//                .otp(otp)
+//                .expiryDate(expiry)
+//                .used(false)
+//                .build();
+//
+//        tokenRepository.save(token);
+//
+//        // 3. Resend SDK Setup & Payload
+//        Resend resend = new Resend(resendApiKey);
+//        CreateEmailOptions params = CreateEmailOptions.builder()
+//                .from("PrintPass <onboarding@resend.dev>") // ⚠️ Testing ke waqt yahi rakhna hai!
+//                .to(email) // ⚠️ Testing me yahan sirf apka Resend account email hi hona chahiye
+//                .subject("PrintPass Email Verification")
+//                .html("<div style='font-family: Arial, sans-serif; text-align: center; padding: 20px;'>" +
+//                        "<h2>Welcome to PrintGrid! 🖨️</h2>" +
+//                        "<p>Your OTP for email verification is:</p>" +
+//                        "<h1 style='color: #4F46E5; letter-spacing: 5px; font-size: 32px;'>" + otp + "</h1>" +
+//                        "<p>This OTP is valid for 10 minutes. Please do not share it with anyone.</p></div>")
+//                .build();
+//
+//        // 4. Bhejo aur Error Handle karo
+//        try {
+//            CreateEmailResponse data = resend.emails().send(params);
+//            log.info("✅ OTP sent successfully to {} in background via Resend (ID: {})", email, data.getId());
+//        } catch (ResendException e) {
+//            // 🛡️ SECURITY MOVE: Agar email fail ho, toh exception throw mat karo!
+//            // Warna user ka register process rollback ho jayega.
+//            // User baad mein 'Resend OTP' click karke dobara mangwa sakta hai.
+//            log.error("❌ Failed to send OTP to {}: {}", email, e.getMessage());
+//        }
+//    }
 
     // 🛡️ VERIFY: User ko verify karke active karne ka logic
     @Transactional
@@ -128,8 +126,21 @@ public class OtpService {
         if (user.isEmailVerified()) {
             throw new RuntimeException("Email already verified. Please login.");
         }
+        // Logic to generate and save token
+        tokenRepository.deleteByEmail(email);
+        String otp = generateOtp();
 
-        // Send OTP asynchronously
-        sendOtpAsync(email);
+        EmailVerificationToken token = EmailVerificationToken.builder()
+                .email(email)
+                .otp(otp)
+                .expiryDate(LocalDateTime.now().plusMinutes(10))
+                .used(false)
+                .build();
+
+        tokenRepository.save(token);
+        // 🚀 THE BIG MOVE: Call external service method
+        emailService.sendOtpEmail(email, otp);
+        log.info("📢 OTP process complete, handoff to EmailService for {}", email);
+
     }
 }
