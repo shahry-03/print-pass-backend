@@ -1,5 +1,6 @@
 package com.printpass.user.controller;
 
+import com.printpass.user.dto.response.ApiResponse;
 import com.printpass.user.dto.response.ShopResponse;
 import com.printpass.user.service.PrintShopService;
 import lombok.RequiredArgsConstructor;
@@ -25,10 +26,11 @@ public class AdminController {
 
     //Shop Verify karo
     @PatchMapping("/shops/{shopId}/verify")
-    public ResponseEntity<Void> verifyShop(@PathVariable UUID shopId){
+    public ResponseEntity<ApiResponse> verifyShop(@PathVariable UUID shopId){
         // Shop ID PathVariable  se aayega, jise hum shopService ke verifyShop method me pass karenge
         shopService.verifyShop(shopId);
-        return ResponseEntity.noContent().build();
+        // Ab hum proper JSON object return kar rahe hain!
+        return ResponseEntity.ok(new ApiResponse("Shop verified successfully"));
     }
 
 
