@@ -18,7 +18,7 @@ spring:
   # ✅ JPA Configuration (Production Safe)
   jpa:
     hibernate:
-      ddl-auto: ${DDL_AUTO:validate}   # Production mein validate use karein
+      ddl-auto: ${DDL_AUTO:update}   # Production mein validate use karein
     show-sql: ${SHOW_SQL:false}        # Logs clean rakhne ke liye false
     properties:
       hibernate:
