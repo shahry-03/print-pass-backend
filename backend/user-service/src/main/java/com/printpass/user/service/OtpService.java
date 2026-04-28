@@ -40,6 +40,30 @@ public class OtpService {
         return String.format("%06d", random.nextInt(1000000));
     }
 
+    // 🔥 INITIAL SIGNUP OTP (Controller yahan call karega)
+    // Ab is par @Async lagane ki zaroorat nahi, kyunke EmailService pehle hi Async hai
+    @Transactional
+    public void sendOtpAsync(String email) {
+        log.info("📢 Initial OTP generation started for: {}", email);
+
+        // 1. Purane unused tokens delete karo
+        tokenRepository.deleteByEmail(email);
+
+        // 2. Naya OTP banao aur database mein save karo
+        String otp = generateOtp();
+        EmailVerificationToken token = EmailVerificationToken.builder()
+                .email(email)
+                .otp(otp)
+                .expiryDate(LocalDateTime.now().plusMinutes(10))
+                .used(false)
+                .build();
+
+        tokenRepository.save(token);
+
+        // 3. 🚀 THE BIG MOVE: EmailService ko awaz lagao
+        emailService.sendOtpEmail(email, otp);
+    }
+
     // 🔥 ASYNC: Background mein chalega taake API fauran response de
 //    @Async
 //    @Transactional // Yeh async hone ki wajah se apni nayi independent transaction banayega
