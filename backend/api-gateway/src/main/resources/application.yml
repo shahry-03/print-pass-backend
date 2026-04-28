@@ -12,6 +12,7 @@ spring:
           enabled: true
           lower-case-service-id: true
       globalcors:
+        add-to-simple-url-handler-mapping: true  # 👈 Isko bahar nikal diya hai!
         cors-configurations:
           '[/**]':
             allowedOrigins:
@@ -25,8 +26,7 @@ spring:
               - PATCH
               - OPTIONS
             allowedHeaders: '*'
-            allowCredentials: false
-          add-to-simple-url-handler-mapping: true
+            allowCredentials: true # 👈 Isay true kar dein taake JWT token easily pass ho
       routes:
         # ========== AUTH SERVICE ==========
         - id: auth-service
