@@ -46,6 +46,7 @@ public class OtpService {
     @Async
     @Transactional // Yeh async hone ki wajah se apni nayi independent transaction banayega
     public void sendOtpAsync(String email) {
+        log.info("🚀 DEBUG: sendOtpAsync trigger ho gaya for email: {}", email); // 👈 Yeh line add karein
         log.debug("Starting async OTP send to {}", email);
 
         // 1. Purane unused tokens delete karo taake database clean rahe
