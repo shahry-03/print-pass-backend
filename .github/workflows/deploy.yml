@@ -37,7 +37,7 @@ jobs:
           key: ${{ secrets.DO_SSH_KEY }}
           script: |
             # Dhyan rahe ke server par aapke folder ka naam PrintPass hi ho
-            cd PrintPass
+            cd print_pass
             
             # Naya code GitHub se layein
             git pull origin main

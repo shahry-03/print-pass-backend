@@ -47,7 +47,7 @@ public class AuthServiceImpl implements AuthService {
         // ==========================================
         if (!user.isActive()) {
             log.warn("Blocked user tried to login: {}", request.getEmail());
-            throw new UserNotActiveException("Your account has been blocked. Contact admin!");
+            throw new UserNotActiveException("Account not active. Please verify your email via OTP to continue.");
         }
 
         // ==========================================
