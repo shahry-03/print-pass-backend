@@ -54,6 +54,10 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         ServerHttpRequest request = exchange.getRequest();
+        // 🔥 NAYA CODE: CORS ki pre-flight (OPTIONS) requests ko hamesha pass hone do
+        if (request.getMethod().name().equals("OPTIONS")) {
+            return chain.filter(exchange);
+        }
         String path = request.getURI().getPath();
 
         // Public endpoints — no token required
