@@ -43,7 +43,7 @@ spring:
         - id: user-service
           uri: lb://user-service
           predicates:
-            - Path=/api/v1/shops/**, /api/v1/admin/**, /api/v1/internal/**, /api/v1/otp/**
+            - Path=/api/v1/shops/**,/api/v1/admin/**,/api/v1/internal/**,/api/v1/otp/**
           filters:
             - name: CircuitBreaker
               args:
