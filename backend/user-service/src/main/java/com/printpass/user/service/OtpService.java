@@ -6,11 +6,16 @@ import com.printpass.user.exception.InvalidOtpException;
 import com.printpass.user.exception.ResourceNotFoundException;
 import com.printpass.user.repository.EmailVerificationTokenRepository;
 import com.printpass.user.repository.UserRepository;
+
+// Resend SDK Imports
+import com.resend.Resend;
+import com.resend.core.exception.ResendException;
+import com.resend.services.emails.model.CreateEmailOptions;
+import com.resend.services.emails.model.CreateEmailResponse;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,11 +29,11 @@ import java.time.LocalDateTime;
 public class OtpService {
 
     private final EmailVerificationTokenRepository tokenRepository;
-    private final JavaMailSender mailSender;
     private final UserRepository userRepository;
 
-    @Value("${spring.mail.username}")
-    private String fromEmail;
+    // Purana JavaMailSender aur fromEmail hata diya, ab direct Resend API key aayegi
+    @Value("${resend.api.key}")
+    private String resendApiKey;
 
     private static final SecureRandom random = new SecureRandom();
 
@@ -59,18 +64,24 @@ public class OtpService {
 
         tokenRepository.save(token);
 
-        // 3. Email tayyar karo
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(email);
-        message.setSubject("PrintPass Email Verification");
-        message.setText("Welcome to PrintGrid! \n\nYour OTP for email verification is: " + otp + "\n\nThis OTP is valid for 10 minutes. Please do not share it with anyone.");
-        message.setFrom(fromEmail);
+        // 3. Resend SDK Setup & Payload
+        Resend resend = new Resend(resendApiKey);
+        CreateEmailOptions params = CreateEmailOptions.builder()
+                .from("PrintPass <onboarding@resend.dev>") // ⚠️ Testing ke waqt yahi rakhna hai!
+                .to(email) // ⚠️ Testing me yahan sirf apka Resend account email hi hona chahiye
+                .subject("PrintPass Email Verification")
+                .html("<div style='font-family: Arial, sans-serif; text-align: center; padding: 20px;'>" +
+                        "<h2>Welcome to PrintGrid! 🖨️</h2>" +
+                        "<p>Your OTP for email verification is:</p>" +
+                        "<h1 style='color: #4F46E5; letter-spacing: 5px; font-size: 32px;'>" + otp + "</h1>" +
+                        "<p>This OTP is valid for 10 minutes. Please do not share it with anyone.</p></div>")
+                .build();
 
         // 4. Bhejo aur Error Handle karo
         try {
-            mailSender.send(message);
-            log.info("✅ OTP sent successfully to {} in background", email);
-        } catch (Exception e) {
+            CreateEmailResponse data = resend.emails().send(params);
+            log.info("✅ OTP sent successfully to {} in background via Resend (ID: {})", email, data.getId());
+        } catch (ResendException e) {
             // 🛡️ SECURITY MOVE: Agar email fail ho, toh exception throw mat karo!
             // Warna user ka register process rollback ho jayega.
             // User baad mein 'Resend OTP' click karke dobara mangwa sakta hai.

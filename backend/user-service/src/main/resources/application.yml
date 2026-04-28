@@ -26,17 +26,20 @@ spring:
         format_sql: false
 
   # ✅ Mail Configuration (Secure)
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: ${MAIL_USERNAME:shahrayarsahito7@gmail.com}
-    password: ${MAIL_PASSWORD:your-new-app-password}  # DO dashboard mein set karein
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
+  resend:
+    api:
+      key: ${RESEND_API_KEY}
+#  mail:
+#    host: smtp.gmail.com
+#    port: 587
+#    username: ${MAIL_USERNAME:shahrayarsahito7@gmail.com}
+#    password: ${MAIL_PASSWORD:your-new-app-password}  # DO dashboard mein set karein
+#    properties:
+#      mail:
+#        smtp:
+#          auth: true
+#          starttls:
+#            enable: true
 
 # ✅ Eureka client configuration (Secure)
 eureka:

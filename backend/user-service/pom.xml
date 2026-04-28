@@ -97,10 +97,11 @@
             <version>2.3.0</version>
         </dependency>
 
-        <!-- Java Mail Sender -->
+        <!-- resend mail sender  -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-mail</artifactId>
+            <groupId>com.resend</groupId>
+            <artifactId>resend-java</artifactId>
+            <version>3.1.0</version>
         </dependency>
 
 
