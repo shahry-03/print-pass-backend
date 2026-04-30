@@ -6,17 +6,8 @@ import com.printpass.user.exception.InvalidOtpException;
 import com.printpass.user.exception.ResourceNotFoundException;
 import com.printpass.user.repository.EmailVerificationTokenRepository;
 import com.printpass.user.repository.UserRepository;
-
-// Resend SDK Imports
-import com.resend.Resend;
-import com.resend.core.exception.ResendException;
-import com.resend.services.emails.model.CreateEmailOptions;
-import com.resend.services.emails.model.CreateEmailResponse;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,11 +24,11 @@ public class OtpService {
     private final EmailService emailService; // 👈 Nayi service inject ki
 
 
-    private static final SecureRandom random = new SecureRandom();
+    private static final SecureRandom secureRandom = new SecureRandom();
 
     // 🔑 6-Digit OTP Generator
     private String generateOtp() {
-        return String.format("%06d", random.nextInt(1000000));
+        return String.format("%06d", secureRandom.nextInt(1000000));
     }
 
     // 🔥 INITIAL SIGNUP OTP (Controller yahan call karega)

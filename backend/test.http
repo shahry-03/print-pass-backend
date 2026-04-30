@@ -1,0 +1,10 @@
+POST https://api.resend.com/emails
+Authorization: Bearer re_AnQGoRC1_EvfhrvVswivMNryUZ6W99wP1
+Content-Type: application/json
+
+{
+  "from": "onboarding@resend.dev",
+  "to": ["shahrayarsahito7@gmail.com"],
+  "subject": "PrintGrid Direct Test",
+  "html": "<h2>Hello from Resend Direct!</h2>"
+}
