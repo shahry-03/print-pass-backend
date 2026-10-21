@@ -1,0 +1,122 @@
+services:
+  # ==========================================
+  # DISCOVERY SERVER (EUREKA)
+  # ==========================================
+  discovery-server:
+    build: ./discovery-server
+    container_name: discovery-server
+    restart: unless-stopped
+    ports:
+      - "8761:8761"
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - EUREKA_HOSTNAME=discovery-server
+    networks:
+      - printpass-network
+
+  # ==========================================
+  # API GATEWAY
+  # ==========================================
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - EUREKA_URI=http://${EUREKA_USERNAME}:${EUREKA_PASSWORD}@discovery-server:8761/eureka/
+    depends_on:
+      - discovery-server
+    networks:
+      - printpass-network
+
+  # ==========================================
+  # AUTH SERVICE
+  # ==========================================
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - EUREKA_URI=http://${EUREKA_USERNAME}:${EUREKA_PASSWORD}@discovery-server:8761/eureka/
+    depends_on:
+      - discovery-server
+    networks:
+      - printpass-network
+
+  # ==========================================
+  # USER SERVICE
+  # ==========================================
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - EUREKA_URI=http://${EUREKA_USERNAME}:${EUREKA_PASSWORD}@discovery-server:8761/eureka/
+    depends_on:
+      - discovery-server
+    networks:
+      - printpass-network
+  
+  # ==========================================
+  # JOB SERVICE
+  # ==========================================
+  job-service:
+    build: ./job-service
+    container_name: job-service
+    restart: unless-stopped
+    ports:
+      - "8084:8084"
+    env_file:
+      - .env
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - EUREKA_URI=http://${EUREKA_USERNAME}:${EUREKA_PASSWORD}@discovery-server:8761/eureka/
+    depends_on:
+      - discovery-server
+    networks:
+      - printpass-network
+
+  # ==========================================
+  # LOCAL MINIO OBJECT STORAGE (S3 Compatible)
+  # ==========================================
+  minio:
+    image: pgsty/silo:latest
+    container_name: minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"   # S3 API Port
+      - "9001:9001"   # MinIO Web UI
+    environment:
+      - MINIO_ROOT_USER=${STORAGE_ACCESS_KEY}
+      - MINIO_ROOT_PASSWORD=${STORAGE_SECRET_KEY}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - printpass-network
+
+# ==========================================
+# VOLUMES & NETWORKS
+# ==========================================
+volumes:
+  minio_data:
+
+networks:
+  printpass-network:
+    driver: bridge

@@ -41,3 +41,7 @@ Thumbs.db
 
 # environment variables
 .env
+
+# Exclude environment specific configurations
+**/application-dev.yml
+**/application-prod.yml
