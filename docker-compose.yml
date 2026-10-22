@@ -95,27 +95,11 @@ services:
   # ==========================================
   # LOCAL MINIO OBJECT STORAGE (S3 Compatible)
   # ==========================================
-  minio:
-    image: pgsty/silo:latest
-    container_name: minio
-    restart: unless-stopped
-    ports:
-      - "9000:9000"   # S3 API Port
-      - "9001:9001"   # MinIO Web UI
-    environment:
-      - MINIO_ROOT_USER=${STORAGE_ACCESS_KEY}
-      - MINIO_ROOT_PASSWORD=${STORAGE_SECRET_KEY}
-    command: server /data --console-address ":9001"
-    volumes:
-      - minio_data:/data
-    networks:
-      - printpass-network
+  
 
 # ==========================================
 # VOLUMES & NETWORKS
 # ==========================================
-volumes:
-  minio_data:
 
 networks:
   printpass-network:
