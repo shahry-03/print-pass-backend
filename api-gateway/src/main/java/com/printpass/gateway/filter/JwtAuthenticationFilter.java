@@ -16,6 +16,7 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
+import org.springframework.util.AntPathMatcher;
 
 import java.security.Key;
 import java.util.Date;
@@ -24,6 +25,8 @@ import java.util.List;
 @Component
 @Slf4j
 public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
+
+    private static final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     @Value("${application.security.jwt.secret-key}")
     private String secretKey;
@@ -67,11 +70,16 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                 "/api/v1/otp/verify",
                 "/api/v1/otp/resend",
                 "/api/v1/jobs/upload",
-                "/api/v1/jobs/reprint",
-                "/actuator/health"
+                "/api/v1/jobs/reprint/**",
+                "/actuator/health",
+                "/v3/api-docs/**",       // Swagger JSON
+                "/swagger-ui/**",        // Swagger UI
+                "/swagger-ui.html",      // Swagger HTML
+                "/webjars/**"            // Swagger CSS/JS
         );
 
-        boolean isPublic = publicPaths.stream().anyMatch(path::startsWith);
+        boolean isPublic = publicPaths.stream().anyMatch(pattern -> pathMatcher.match(pattern, path));
+        
         if (isPublic) {
             return chain.filter(exchange);
         }
