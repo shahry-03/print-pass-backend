@@ -10,6 +10,7 @@ on:
       - 'job-service/**'
       - 'user-service/**'
       - 'discovery-server/**'
+      - '.github/workflows/**'
 
 permissions:
   id-token: write
