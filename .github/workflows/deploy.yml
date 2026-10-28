@@ -1,0 +1,93 @@
+name: Deploy Microservices to Azure Container Apps
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'auth-service/**'
+      - 'api-gateway/**'
+      - 'job-service/**'
+      - 'user-service/**'
+      - 'discovery-server/**'
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  detect-and-deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - service: auth-service
+            path: auth-service
+          - service: api-gateway
+            path: api-gateway
+          - service: job-service
+            path: job-service
+          - service: user-service
+            path: user-service
+          - service: discovery-server
+            path: discovery-server
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Check if service changed
+        id: filter
+        run: |
+          if git diff --quiet HEAD^ HEAD -- ${{ matrix.path }}; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Set up JDK 17
+        if: steps.filter.outputs.changed == 'true'
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build Service with Maven
+        if: steps.filter.outputs.changed == 'true'
+        run: |
+          cd ${{ matrix.path }}
+          mvn clean package -DskipTests
+          cd ..
+
+      - name: Log in to Azure (OIDC)
+        if: steps.filter.outputs.changed == 'true'
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Log in to Azure Container Registry
+        if: steps.filter.outputs.changed == 'true'
+        run: |
+          az acr login --name printpassregistry
+
+      - name: Build and Push Docker Image
+        if: steps.filter.outputs.changed == 'true'
+        run: |
+          IMAGE_TAG="printpassregistry.azurecr.io/${{ matrix.service }}:${{ github.sha }}"
+          docker build -t $IMAGE_TAG -t printpassregistry.azurecr.io/${{ matrix.service }}:latest ./${{ matrix.path }}
+          docker push $IMAGE_TAG
+          docker push printpassregistry.azurecr.io/${{ matrix.service }}:latest
+
+      - name: Deploy to Azure Container App
+        if: steps.filter.outputs.changed == 'true'
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            az containerapp update \
+              --name ${{ matrix.service }} \
+              --resource-group PrintPassRG-India \
+              --image printpassregistry.azurecr.io/${{ matrix.service }}:${{ github.sha }}

@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -37,13 +38,13 @@ public class StorageService {
         }
     }
 
-    // ✅ File Upload karo → URL return karo
+    // ✅ Original File Upload karo (MultipartFile) → URL return karo
     public String uploadFile(MultipartFile file) {
         try {
             // Unique file naam banao — Duplicate se bachne ke liye
             String uniqueFileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
 
-            // DigitalOcean Spaces mein upload karo
+            // Backblaze/DO Spaces mein upload karo
             minioClient.putObject(
                     PutObjectArgs.builder()
                             .bucket(bucketName)
@@ -64,8 +65,32 @@ public class StorageService {
         }
     }
 
+    // 🔥 NAYA METHOD: Converted PDF (byte[]) ko Upload karein
+    public String uploadBytes(byte[] bytes, String fileName, String contentType) {
+        try {
+            // Unique file naam banao
+            String uniqueFileName = UUID.randomUUID() + "_" + fileName;
+
+            // ByteArrayInputStream ka use karke upload karein
+            minioClient.putObject(
+                    PutObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(uniqueFileName)
+                            .stream(new ByteArrayInputStream(bytes), bytes.length, -1)
+                            .contentType(contentType)
+                            .build()
+            );
+
+            log.info("Converted PDF uploaded successfully: {}", uniqueFileName);
+            return uniqueFileName;
+
+        } catch (Exception e) {
+            log.error("PDF byte upload failed: {}", e.getMessage());
+            throw new RuntimeException("PDF byte upload failed: " + e.getMessage());
+        }
+    }
+
     // ✅ Presigned URL banao — Print ke waqt
-    // Temporary URL jo sirf kuch time ke liye valid hoga
     public String getPresignedUrl(String fileName) {
         try {
             return minioClient.getPresignedObjectUrl(

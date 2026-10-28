@@ -1,0 +1,61 @@
+server:
+  port: ${PORT:8081}
+
+# ==========================================
+# EUREKA CONFIG (Azure Standard)
+# ==========================================
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://discovery-server/eureka/} # Azure internal routing
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: false
+    hostname: ${spring.application.name} # Azure khud resolve karega
+    instance-id: ${spring.application.name}:${server.port}
+
+# ==========================================
+# JWT CONFIGURATION
+# ==========================================
+application:
+  security:
+    jwt:
+      secret-key: ${JWT_SECRET} # Azure Environment Variable se aayega
+      expiration: ${JWT_EXPIRATION:86400000}
+
+# ==========================================
+# FEIGN CLIENT CONFIG (Azure Standard)
+# ==========================================
+# Azure Standard environment mein bina port ke short name use hota hai
+USER_SERVICE_URL: http://user-service 
+
+feign:
+  client:
+    config:
+      default:
+        connect-timeout: 5000
+        read-timeout: 5000
+
+# ==========================================
+# ACTUATOR & SWAGGER
+# ==========================================
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    root: INFO
+    com.printpass.authservice: INFO # Production mein INFO theek hai

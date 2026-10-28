@@ -1,3 +1,4 @@
+// job-service/src/main/java/com/printpass/job/dto/response/PrintResponse.java
 package com.printpass.job.dto.response;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -13,6 +14,8 @@ import lombok.NoArgsConstructor;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PrintResponse {
     private String fileName;
-    private String fileUrl;    // ← Shop wale ko milega print ke liye
+    private String fileUrl;          // Original file URL
+    private String convertedPdfUrl;  // New PDF URL
+    private int totalPages;          // NewPage Count
     private String message;
 }

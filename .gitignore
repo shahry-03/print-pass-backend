@@ -50,3 +50,5 @@ deploy-safe.sh
 
 **/application-dev.yml
 **/application-prod.yml
+sample.docx
+*.backup

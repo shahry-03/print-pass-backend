@@ -1,0 +1,120 @@
+services:
+  # ==========================================
+  # DISCOVERY SERVER (EUREKA)
+  # ==========================================
+  discovery-server:
+    build: ./discovery-server
+    container_name: discovery-server
+    restart: unless-stopped
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - EUREKA_HOSTNAME=discovery-server
+    networks:
+      - printpass-local-network
+
+  # ==========================================
+  # GOTENBERG (File Conversion)
+  # ==========================================
+  gotenberg:
+    image: gotenberg/gotenberg:8
+    container_name: gotenberg
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    networks:
+      - printpass-local-network
+
+  # ==========================================
+  # API GATEWAY
+  # ==========================================
+  api-gateway:
+    build: ./api-gateway
+    container_name: api-gateway
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - EUREKA_URI=http://discovery-server:8761/eureka/
+      - JWT_SECRET=${JWT_SECRET}
+    depends_on:
+      - discovery-server
+    networks:
+      - printpass-local-network
+
+  # ==========================================
+  # AUTH SERVICE
+  # ==========================================
+  auth-service:
+    build: ./auth-service
+    container_name: auth-service
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - EUREKA_URI=http://discovery-server:8761/eureka/
+      - JWT_SECRET=${JWT_SECRET}
+      - USER_SERVICE_URL=http://user-service:8082
+    depends_on:
+      - discovery-server
+    networks:
+      - printpass-local-network
+
+  # ==========================================
+  # USER SERVICE (Neon Branch DB)
+  # ==========================================
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - EUREKA_URI=http://discovery-server:8761/eureka/
+      - JWT_SECRET=${JWT_SECRET}
+      - USER_DB_URL=${USER_DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - RESEND_API_KEY=${RESEND_API_KEY}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+    depends_on:
+      - discovery-server
+    networks:
+      - printpass-local-network
+  
+  # ==========================================
+  # JOB SERVICE (Neon Branch DB + Gotenberg)
+  # ==========================================
+  job-service:
+    build: ./job-service
+    container_name: job-service
+    restart: unless-stopped
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - EUREKA_URI=http://discovery-server:8761/eureka/
+      - JWT_SECRET=${JWT_SECRET}
+      - USER_SERVICE_URL=http://user-service:8082
+      - JOB_DB_URL=${JOB_DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - STORAGE_URL=${STORAGE_URL}
+      - STORAGE_ACCESS_KEY=${STORAGE_ACCESS_KEY}
+      - STORAGE_SECRET_KEY=${STORAGE_SECRET_KEY}
+      - STORAGE_BUCKET=${STORAGE_BUCKET}
+      - GOTENBERG_URL=http://gotenberg:3000
+    depends_on:
+      - discovery-server
+      - gotenberg
+    networks:
+      - printpass-local-network
+
+networks:
+  printpass-local-network:
+    driver: bridge

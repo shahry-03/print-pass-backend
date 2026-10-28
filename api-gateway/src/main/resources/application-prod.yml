@@ -1,0 +1,121 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: false
+          lower-case-service-id: true
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - "https://printpass.tech"          # Production Domain
+              - "https://www.printpass.tech"      # Production WWW
+              - "https://print-pass-self.vercel.app" # Vercel Default
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowedHeaders: '*'
+            allowCredentials: true
+      routes:
+        # ========== MAIN SERVICES ==========
+        - id: auth-service
+          uri: http://auth-service  # 🔥 PROD: Bina port ke (Azure Proxy handle karega)
+          predicates:
+            - Path=/api/v1/auth/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: authService
+                fallbackUri: forward:/fallback/auth
+
+        - id: user-service
+          uri: http://user-service  # 🔥 PROD: Bina port ke
+          predicates:
+            - Path=/api/v1/shops/**,/api/v1/admin/**,/api/v1/internal/**,/api/v1/otp/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: userService
+                fallbackUri: forward:/fallback/user
+
+        - id: job-service
+          uri: http://job-service   # 🔥 PROD: Bina port ke
+          predicates:
+            - Path=/api/v1/jobs/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: jobService
+                fallbackUri: forward:/fallback/job
+
+        # ========== SWAGGER ROUTES ==========
+        - id: auth-service-docs
+          uri: http://auth-service
+          predicates:
+            - Path=/v3/api-docs/auth-service
+          filters:
+            - RewritePath=/v3/api-docs/auth-service, /v3/api-docs
+
+        - id: user-service-docs
+          uri: http://user-service
+          predicates:
+            - Path=/v3/api-docs/user-service
+          filters:
+            - RewritePath=/v3/api-docs/user-service, /v3/api-docs
+
+        - id: job-service-docs
+          uri: http://job-service
+          predicates:
+            - Path=/v3/api-docs/job-service
+          filters:
+            - RewritePath=/v3/api-docs/job-service, /v3/api-docs
+
+# ==========================================
+# OTHER CONFIGS
+# ==========================================
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://discovery-server/eureka/} # Prod Eureka
+
+application:
+  security:
+    jwt:
+      secret-key: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+
+resilience4j:
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: ${GATEWAY_TIMEOUT:10s}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    urls:
+      - name: "1. Auth Service"
+        url: /v3/api-docs/auth-service
+      - name: "2. User Service"
+        url: /v3/api-docs/user-service
+      - name: "3. Job Service"
+        url: /v3/api-docs/job-service
+
+logging:
+  level:
+    root: INFO
+    com.printpass.gateway: INFO

@@ -1,0 +1,37 @@
+server:
+  port: ${PORT:8761}
+
+  # Cloud par Eureka ko secure karna lazmi hai!
+  security:
+    user:
+      name: ${EUREKA_USERNAME}
+      password: ${EUREKA_PASSWORD}
+
+# ==========================================
+# EUREKA CONFIG (Azure Standard)
+# ==========================================
+eureka:
+  instance:
+    hostname: ${EUREKA_HOSTNAME:localhost}
+    prefer-ip-address: false # Azure par false hi rakhna hai
+  client:
+    register-with-eureka: false
+    fetch-registry: false
+  server:
+    wait-time-in-ms-when-sync-empty: 0
+    enable-self-preservation: true # PRODUCTION ke liye TRUE lazmi hai
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    root: INFO
+    com.netflix.eureka: WARN
+    com.netflix.discovery: WARN
