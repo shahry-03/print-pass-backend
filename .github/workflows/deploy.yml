@@ -90,4 +90,39 @@ jobs:
             az containerapp update \
               --name ${{ matrix.service }} \
               --resource-group PrintPassRG-India \
-              --image printpassregistry.azurecr.io/${{ matrix.service }}:${{ github.sha }}
+              --image printpassregistry.azurecr.io/${{ matrix.service }}:${{ github.sha }} \
+              --set-env-vars "SPRING_PROFILES_ACTIVE=prod"
+
+  # ==========================================
+  # GOTENBERG DEPLOYMENT JOB
+  # ==========================================
+  deploy-gotenberg:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log in to Azure (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy Gotenberg
+        uses: azure/cli@v2
+        with:
+          inlineScript: |
+            # Check if gotenberg exists, if not create it, else update it
+            if az containerapp show -n gotenberg -g PrintPassRG-India &>/dev/null; then
+              az containerapp update -n gotenberg -g PrintPassRG-India --image gotenberg/gotenberg:8
+            else
+              az containerapp create \
+                --name gotenberg \
+                --resource-group PrintPassRG-India \
+                --environment PrintPassEnv-Standard \
+                --image gotenberg/gotenberg:8 \
+                --target-port 3000 \
+                --ingress internal \
+                --min-replicas 1 \
+                --max-replicas 1 \
+                --cpu 1.0 \
+                --memory 2.0Gi
+            fi
