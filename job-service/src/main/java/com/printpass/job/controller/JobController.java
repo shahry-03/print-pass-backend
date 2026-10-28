@@ -26,20 +26,17 @@ public class JobController {
             @RequestParam("file") MultipartFile file) {
 
         log.debug("File upload request: {}", file.getOriginalFilename());
-
         JobResponse response = jobService.uploadFile(file);
-
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+    
     // ✅ Public endpoint — Student purane PIN se naya generate karega
     @PostMapping("/reprint/{oldPin}")
     public ResponseEntity<JobResponse> reprintJob(
             @PathVariable("oldPin") String oldPin) {
 
         log.debug("Reprint request for old PIN: {}", oldPin);
-
         JobResponse response = jobService.reprintJob(oldPin);
-
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -47,12 +44,12 @@ public class JobController {
     @GetMapping("/{pin}")
     public ResponseEntity<PrintResponse> getFileByPin(
             @PathVariable("pin") String pin,
-            @RequestAttribute("X-User-Id") UUID shopId) {
+            @RequestAttribute("X-User-Id") String shopId) { // UUID se String kar diya
 
         log.debug("Get file by PIN: {}", pin);
-
-        PrintResponse response = jobService.getFileByPin(pin, shopId);
-
+        
+        // String ko UUID mein convert kiya
+        PrintResponse response = jobService.getFileByPin(pin, UUID.fromString(shopId));
         return ResponseEntity.ok(response);
     }
 
@@ -60,12 +57,12 @@ public class JobController {
     @PostMapping("/{pin}/print")
     public ResponseEntity<PrintResponse> printJob(
             @PathVariable("pin") String pin,
-            @RequestAttribute("X-User-Id") UUID shopId) {
+            @RequestAttribute("X-User-Id") String shopId) { //  UUID se String kar diya
 
         log.debug("Print request for PIN: {}", pin);
-
-        PrintResponse response = jobService.printJob(pin, shopId);
-
+        
+        // String ko UUID mein convert kiya
+        PrintResponse response = jobService.printJob(pin, UUID.fromString(shopId));
         return ResponseEntity.ok(response);
     }
 }

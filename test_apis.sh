@@ -5,7 +5,10 @@
 # ==============================================================================
 
 # API Gateway Base URL
-GATEWAY="http://localhost:8080/api/v1"
+# Pehle (Local):
+# GATEWAY="http://localhost:8080/api/v1"
+# Ab (Azure):
+GATEWAY="https://api-gateway.greenisland-a3d56c74.malaysiawest.azurecontainerapps.io/api/v1"
 
 # ANSI Colors
 GREEN='\033[0;32m'

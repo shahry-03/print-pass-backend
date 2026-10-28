@@ -64,6 +64,12 @@
             <version>2.3.0</version>
         </dependency>
 
+        <!-- ADD THIS: Required for lb:// to work with Eureka -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-loadbalancer</artifactId>
+        </dependency>
+
 
     </dependencies>
 

@@ -1,5 +1,6 @@
 package com.printpass.job.security;
 
+import jakarta.servlet.DispatcherType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,31 +23,33 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // 1. Disable CSRF (Cross-Site Request Forgery) since we are using stateless JWT authentication
+            // 1. Disable CSRF
             .csrf(AbstractHttpConfigurer::disable)
 
-            // 2. Enable CORS (Cross-Origin Resource Sharing) to allow requests from the frontend
+            // 2. Enable CORS
             .cors(Customizer.withDefaults())
 
-            // 3. Enforce Stateless Session Management (No HttpSession will be created)
+            // 3. Enforce Stateless Session Management
             .sessionManagement(session ->
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
 
-            // 4. Define Granular Access Rules for Endpoints
+            // 4. Define Granular Access Rules
             .authorizeHttpRequests(auth -> auth
+                    // Internal FORWARD aur ERROR dispatches ko allow karo taake 403 na bane
+                    .dispatcherTypeMatchers(DispatcherType.FORWARD, DispatcherType.ERROR).permitAll()
+
                     // ==========================================
-                    // PUBLIC ENDPOINTS (No authentication required)
+                    // PUBLIC ENDPOINTS (SABSE PEHLE AAYENGE)
                     // ==========================================
-                    // Allow students to upload files without login
-                    .requestMatchers(HttpMethod.POST, "/api/v1/jobs/upload").permitAll()
-                    // Allow students to reprint using an old PIN without login
+                    // Upload aur Reprint bilkul public hain (no token required)
+                    .requestMatchers(HttpMethod.POST, "/api/v1/jobs/upload", "/api/v1/jobs/upload/**").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/v1/jobs/reprint/**").permitAll()
+                    .requestMatchers("/error").permitAll()
 
                     // ==========================================
                     // DOCUMENTATION & MONITORING
                     // ==========================================
-                    // Allow access to Swagger UI and Actuator health checks
                     .requestMatchers(
                             "/v3/api-docs/**",
                             "/swagger-ui/**",
@@ -55,19 +58,19 @@ public class SecurityConfig {
                     ).permitAll()
 
                     // ==========================================
-                    // PROTECTED ENDPOINTS (Authentication required)
+                    // PROTECTED ENDPOINTS (Sirf PRINT_SHOP ke liye)
                     // ==========================================
-                    // Only authenticated shopkeepers (PRINT_SHOP role) can access job details and print actions
-                    .requestMatchers("/api/v1/jobs/**").hasRole("PRINT_SHOP")
+                    // Broad wildcard hata kar specific endpoints set kiye hain
+                    .requestMatchers(HttpMethod.GET, "/api/v1/jobs/*").hasRole("PRINT_SHOP")
+                    .requestMatchers(HttpMethod.POST, "/api/v1/jobs/*/print").hasRole("PRINT_SHOP")
 
                     // ==========================================
                     // FALLBACK RULE
                     // ==========================================
-                    // Any other unlisted endpoint requires the user to be authenticated
                     .anyRequest().authenticated()
             )
 
-            // 5. Add the custom JWT filter before the default Spring Security UsernamePasswordAuthenticationFilter
+            // 5. Add the custom JWT filter
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

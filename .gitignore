@@ -44,4 +44,7 @@ Thumbs.db
 
 # Exclude environment specific configurations
 **/application-dev.yml
-**/application-prod.yml
+**/application-prod.yml*-env.json
+test.pdf
+test_payload.pdf
+deploy-safe.sh
