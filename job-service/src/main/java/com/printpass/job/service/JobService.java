@@ -19,4 +19,7 @@ public interface JobService {
 
     // Print shop print button dabayega → print trigger
     PrintResponse printJob(String secretKey, UUID shopId);
+
+    // Student ke liye status check
+    JobResponse getJobStatus(String pin);
 }

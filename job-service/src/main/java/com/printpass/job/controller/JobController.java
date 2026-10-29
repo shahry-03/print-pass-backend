@@ -40,6 +40,14 @@ public class JobController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    // ✅ Public endpoint — Student bina login ke status check kar sake
+    @GetMapping("/status/{pin}")
+    public ResponseEntity<JobResponse> getJobStatus(@PathVariable("pin") String pin) {
+        log.debug("Public status check for PIN: {}", pin);
+        JobResponse response = jobService.getJobStatus(pin);
+        return ResponseEntity.ok(response);
+    }
+
     // ✅ JWT Protected — Print shop PIN enter karega, file aayegi
     @GetMapping("/{pin}")
     public ResponseEntity<PrintResponse> getFileByPin(

@@ -257,4 +257,23 @@ public class JobServiceImpl implements JobService {
                 .message("Print completed successfully! Ready for pickup.")
                 .build();
     }
-}// Triggering pipeline for prod deployment
+
+    @Override
+    public JobResponse getJobStatus(String pin) {
+        PrintJob job = printJobRepository.findBySecretKey(pin)
+                .orElseThrow(() -> new InvalidPinException("Invalid PIN: " + pin));
+
+        return JobResponse.builder()
+                .id(job.getId())
+                .secretKey(job.getSecretKey())
+                .fileName(job.getFileName())
+                .jobStatus(job.getJobStatus())
+                .conversionStatus(job.getConversionStatus())
+                .totalPages(job.getTotalPages())
+                .expiresAt(job.getExpiresAt())
+                .createdAt(job.getCreatedAt())
+                .build();
+    }
+
+
+}

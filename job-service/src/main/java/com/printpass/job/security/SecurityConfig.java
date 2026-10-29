@@ -45,6 +45,7 @@ public class SecurityConfig {
                     // Upload aur Reprint bilkul public hain (no token required)
                     .requestMatchers(HttpMethod.POST, "/api/v1/jobs/upload", "/api/v1/jobs/upload/**").permitAll()
                     .requestMatchers(HttpMethod.POST, "/api/v1/jobs/reprint/**").permitAll()
+                    .requestMatchers(HttpMethod.GET, "/api/v1/jobs/status/**").permitAll() 
                     .requestMatchers("/error").permitAll()
 
                     // ==========================================
