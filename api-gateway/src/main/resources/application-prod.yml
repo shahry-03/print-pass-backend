@@ -13,6 +13,7 @@ spring:
         cors-configurations:
           '[/**]':
             allowedOrigins:
+              - "http://localhost:5173"  # For local testing of frontend
               - "https://printpass.tech"          # Production Domain
               - "https://www.printpass.tech"      # Production WWW
               - "https://print-pass-self.vercel.app" # Vercel Default
